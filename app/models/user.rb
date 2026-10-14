@@ -7,10 +7,14 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
-         :timeoutable, :trackable
+         :timeoutable, :trackable,
+         :jwt_authenticatable, jwt_revocation_strategy: JwtBlacklist
+
+  # Callbacks
+  before_validation :normalize_email
 
   # Associations
-  has_many :audits, dependent: :destroy
+  has_many :versions, class_name: 'PaperTrail::Version', dependent: :destroy
 
   # Validations
   validates :first_name, :last_name, :email, presence: true
@@ -22,5 +26,12 @@ class User < ApplicationRecord
   # Instance methods
   def full_name
     "#{first_name} #{last_name}".strip
+  end
+
+  private
+
+  # Normalize email to be lowercase and trimmed
+  def normalize_email
+    self.email = email.to_s.strip.downcase
   end
 end

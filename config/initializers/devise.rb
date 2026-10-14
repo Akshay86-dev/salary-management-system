@@ -266,7 +266,7 @@ Devise.setup do |config|
   # should add them to the navigational formats lists.
   #
   # The "*/*" below is required to match Internet Explorer requests.
-  # config.navigational_formats = ['*/*', :html, :turbo_stream]
+  config.navigational_formats = ['*/*', :html, :turbo_stream, :json]
 
   # The default HTTP method used to sign out a resource. Default is :delete.
   config.sign_out_via = :delete
@@ -305,12 +305,35 @@ Devise.setup do |config|
   # apps is `200 OK` and `302 Found` respectively, but new apps are generated with
   # these new defaults that match Hotwire/Turbo behavior.
   # Note: These might become the new default in future versions of Devise.
-  config.responder.error_status = :unprocessable_content
+    config.responder.error_status = :unprocessable_content
   config.responder.redirect_status = :see_other
+
+  # Configure the failure app to return JSON for API requests
+  # instead of HTML redirects
+  config.warden do |warden_config|
+    warden_config.failure_app = CustomFailure
+  end
 
   # ==> Configuration for :registerable
 
   # When set to false, does not sign a user in automatically after their password is
   # changed. Defaults to true, so a user is signed in automatically after changing a password.
   # config.sign_in_after_change_password = true
+  # ==> Configuration for devise-jwt
+  # https://github.com/waiting-for-dev/devise-jwt
+  #
+  # Use the secret key from Rails credentials or generate one with:
+  #   rails secret
+  # In production, set via DEVISE_JWT_SECRET environment variable.
+  jwt_secret = ENV.fetch('DEVISE_JWT_SECRET', Rails.application.secret_key_base)
+
+  config.jwt do |jwt|
+    jwt.secret = jwt_secret
+    jwt.expiration_time = 24.hours.to_i
+    jwt.request_formats = { user: [:json] }
+    # Automatically revoke tokens on sign-out
+    jwt.revocation_requests = [
+      ['DELETE', %r{^/users/sign_out$}]
+    ]
+  end
 end

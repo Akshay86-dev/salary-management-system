@@ -2,18 +2,10 @@
 
 # Base controller for API v1 endpoints
 # All API v1 controllers should inherit from this controller
-# Provides authentication and common response helpers
-class Api::V1::BaseController < ApplicationController
-  # All API v1 endpoints require authentication by default
+# Provides common response helpers and JWT authentication
+  class Api::V1::BaseController < ApplicationController
+  # Authenticate users via JWT bearer token for all protected endpoints
   before_action :authenticate_user!
-
-  # Health check endpoint
-  def health
-    render json: {
-      status: 'ok',
-      timestamp: Time.current.iso8601
-    }
-  end
 
   private
 

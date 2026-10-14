@@ -7,6 +7,7 @@ gem "propshaft"
 
 # Authentication and API gems
 gem "devise"
+gem "devise-jwt"
 gem "rack-cors"
 gem "jsonapi-serializer"
 # Track changes to your models with versioning [https://github.com/paper-trail/gem_paper_trail]

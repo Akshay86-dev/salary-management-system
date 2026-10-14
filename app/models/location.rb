@@ -3,6 +3,9 @@
 # Location model for salary management system
 # Represents physical locations where employees work
 class Location < ApplicationRecord
+  # PaperTrail for versioning
+  has_paper_trail
+
   # Associations
   has_many :employees
 

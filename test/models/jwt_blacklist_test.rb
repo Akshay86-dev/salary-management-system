@@ -1,6 +1,6 @@
 require "test_helper"
 
-class AuditTest < ActiveSupport::TestCase
+class JwtBlacklistTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end

@@ -43,16 +43,6 @@ Build a Salary Management System for 10,000 employees across multiple countries 
    - `city: string` (required)
    - `timezone: string` (required, example: "America/New_York")
 
-6. **Audit Model Fields**:
-   - `user_id: integer` (foreign key, optional)
-   - `action: integer` (enum: create=0, update=1, delete=2)
-   - `auditable_type: integer` (enum: employee=0, salary=1, department=2, location=3)
-   - `auditable_id: integer`
-   - `previous_data: jsonb` (optional)
-   - `new_data: jsonb` (optional)
-   - `ip_address: string`
-    - `user_agent: string`
-
 ## Files
 
 ### New Files
@@ -68,15 +58,13 @@ Build a Salary Management System for 10,000 employees across multiple countries 
 
 4. **`app/models/user.rb`** - User model with Devise authentication
 
-5. **`app/models/audit.rb`** - Audit log model
+5. **`app/models/employee.rb`** - Employee model
 
-6. **`app/models/employee.rb`** - Employee model
+6. **`app/models/salary.rb`** - Salary model
 
-7. **`app/models/salary.rb`** - Salary model
+7. **`app/models/department.rb`** - Department model
 
-8. **`app/models/department.rb`** - Department model
-
-9. **`app/models/location.rb`** - Location model
+8. **`app/models/location.rb`** - Location model
 
 10. **`app/controllers/api/base_controller.rb`** - Base API controller with authentication
 
@@ -90,19 +78,16 @@ Build a Salary Management System for 10,000 employees across multiple countries 
 
 15. **`app/controllers/api/v1/locations_controller.rb`** - Location CRUD endpoints
 
-16. **`app/controllers/api/v1/reports_controller.rb`** - Reporting endpoints
+15. **`app/controllers/api/v1/reports_controller.rb`** - Reporting endpoints
 
-17. **`app/controllers/concerns/auditable.rb`** - Module for automatic audit logging
-
-18. **Database migrations** (in `db/migrate/`):
+16. **Database migrations** (in `db/migrate/`):
    - `devise_create_users.rb`
    - `create_employees.rb`
    - `create_salaries.rb`
    - `create_departments.rb`
    - `create_locations.rb`
-   - `create_audits.rb`
 
-19. **`db/seeds.rb`** - Updated to seed 10,000 employees with departments, locations, and salaries
+17. **`db/seeds.rb`** - Updated to seed 10,000 employees with departments, locations, and salaries
 
 20. **`frontend/`** - React application directory
    - `package.json` - React dependencies (axios, react-router-dom, etc.)
@@ -153,19 +138,7 @@ Build a Salary Management System for 10,000 employees across multiple countries 
 
 ### New Functions
 
-1. **`Auditable.log_event(auditable_type, auditable_id, action, previous_data, new_data, user, request)`**
-   - File: `app/controllers/concerns/auditable.rb`
-   - Purpose: Creates an Audit record for any model change
-   - Parameters:
-    - `auditable_type`: Symbol or string indicating the model type
-    - `auditable_id`: Integer ID of the affected record
-    - `action`: Symbol (`:create`, `:update`, `:delete`)
-    - `previous_data`: Hash of attribute values before change
-    - `new_data`: Hash of attribute values after change
-    - `user`: The User who made the change (optional)
-    - `request`: The HTTP request object for IP and user agent
-
-2. **`Api::V1::EmployeesController#index`**
+1. **`Api::V1::EmployeesController#index`**
    - List employees with pagination, filtering, and sorting
 
 3. **`Api::V1::SalariesController#current`**
@@ -180,10 +153,7 @@ Build a Salary Management System for 10,000 employees across multiple countries 
 6. **`Api::V1::ReportsController#headcount_by_location`**
    - Return employee counts grouped by location
 
-7. **`Api::V1::ReportsController#audit_trail`**
-   - Return audit log entries with filtering
-
-8. **`Api::V1::ReportsController#export`**
+7. **`Api::V1::ReportsController#export`**
    - Generate and return CSV export of employee data
 
 ### Modified Functions
@@ -215,14 +185,7 @@ Build a Salary Management System for 10,000 employees across multiple countries 
     - Devise modules: `:database_authenticatable`, `:registerable`, `:recoverable`, `:rememberable`, `:validatable`, `:timeoutable`, `:trackable`
    - Key methods: standard Devise methods, plus any custom validation methods
 
-2. **`Audit < ApplicationRecord`**
-   - File: `app/models/audit.rb`
-   - Enums: `action` (create, update, delete), `auditable_type` (employee, salary, department, location)
-   - Key methods:
-    - `record_change` - Class method to create audit entries
-    - Scopes for filtering by action, auditable_type, user_id, date range
-
-3. **`Employee < ApplicationRecord`**
+2. **`Employee < ApplicationRecord`**
    - File: `app/models/employee.rb`
    - Relationships: `belongs_to :department`, `belongs_to :location`, `has_many :salaries`
    - Key methods:
@@ -310,12 +273,7 @@ None planned. Existing stub classes (ApplicationMailer, ApplicationJob) will rem
     - Test user creation and authentication
    - Test Devise session creation
 
-2. **`test/models/audit_test.rb`**
-   - Test audit record creation
-   - Test audit filtering by action, type, user
-   - Test immutability of audit records
-
-3. **`test/models/employee_test.rb`**
+2. **`test/models/employee_test.rb`**
    - Test validations (required fields, unique employee_id, unique email)
    - Test associations (department, location, salaries)
    - Test custom methods (full_name, current_salary, full_employee_id)
@@ -349,18 +307,13 @@ None planned. Existing stub classes (ApplicationMailer, ApplicationJob) will rem
 9. **`test/controllers/api/v1/reports_controller_test.rb`**
    - Test report generation (department salaries, job title averages)
    - Test CSV export
-   - Test audit trail endpoint
 
 10. **`test/controllers/api/auth_controller_test.rb`**
     - Test login with valid credentials
     - Test login failure with invalid credentials
     - Test logout/revocation
 
-11. **`test/integration/audit_logging_test.rb`**
-    - Test that audit records are created on all create/update/delete operations
-    - Test that audit captures correct user, IP, and user agent
-
-12. **`test/fixtures/`**
+11. **`test/fixtures/`**
     - `employees.yml` - Sample employee data
     - `salaries.yml` - Sample salary data
     - `departments.yml` - Sample departments
@@ -379,8 +332,7 @@ None planned. Existing stub classes (ApplicationMailer, ApplicationJob) will rem
 1. **Model-level validations** - Test presence, uniqueness, format
 2. **API response validation** - Test correct JSON structure and status codes
 3. **Authentication validation** - Test that protected endpoints return 401 without token
-4. **Audit validation** - Test audit records are created with correct data
-5. **Edge cases** - Test soft delete behavior, salary history, currency handling
+4. **Edge cases** - Test soft delete behavior, salary history, currency handling
 
 ## Implementation Order
 
@@ -394,18 +346,15 @@ None planned. Existing stub classes (ApplicationMailer, ApplicationJob) will rem
    - Configure `config/database.yml` with proper PostgreSQL settings
 
 2. **Database Setup**
-    - Generate and run Devise user migration (`rails generate devise:install`)
-   - Create migrations for Employee, Salary, Department, Location, Audit tables
+    - Generate and run Devise user migration (`rails generate devise:install`)\n   - Create migrations for Employee, Salary, Department, Location tables
    - Run `rails db:create` and `rails db:migrate`
 
 3. **Model Implementation**
     - Create `app/models/user.rb` with Devise configuration
-   - Create `app/models/audit.rb` with enums and serialize for JSON data
    - Create `app/models/department.rb` with validations and associations
    - Create `app/models/location.rb` with validations and associations
    - Create `app/models/employee.rb` with validations, associations, scopes, and methods
    - Create `app/models/salary.rb` with validations, enum, scopes, and methods
-   - Create `app/controllers/concerns/auditable.rb` concern
 
 4. **API Controllers**
    - Create `app/controllers/api/base_controller.rb` with authentication before_action
@@ -450,7 +399,6 @@ None planned. Existing stub classes (ApplicationMailer, ApplicationJob) will rem
    - Update `test/test_helper.rb` with authentication helpers
    - Create model tests for all entities
    - Create controller tests for all API endpoints
-   - Create integration tests for audit logging
    - Create fixture files for test data
    - Run tests and ensure 80%+ coverage on core logic
 

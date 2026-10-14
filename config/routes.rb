@@ -1,11 +1,13 @@
 Rails.application.routes.draw do
   # Devise authentication routes
-  devise_for :users, defaults: { format: :json }
+  devise_for :users,
+             defaults: { format: :json },
+             controllers: { sessions: 'users/sessions' }
 
   namespace :api do
     namespace :v1 do
-      # Health check endpoint
-      get 'health', to: 'base#health'
+      # Health check endpoint (no authentication required)
+      get 'health', to: 'health#index'
       
       # Auth endpoints
       get 'auth/profile', to: 'auth#profile'
