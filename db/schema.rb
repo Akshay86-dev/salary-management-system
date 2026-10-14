@@ -10,14 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_13_121519) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_13_133510) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "departments", force: :cascade do |t|
     t.string "name", null: false
     t.decimal "budget", precision: 12, scale: 2
-    t.integer "manager_id"
+    t.bigint "manager_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_departments_on_name", unique: true
@@ -94,7 +94,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_121519) do
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
   end
 
-  add_foreign_key "departments", "departments", column: "manager_id"
+  add_foreign_key "departments", "employees", column: "manager_id"
   add_foreign_key "employees", "departments"
   add_foreign_key "employees", "locations"
   add_foreign_key "salaries", "employees"

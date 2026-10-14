@@ -8,7 +8,7 @@ class Department < ApplicationRecord
 
   # Associations
   has_many :employees, dependent: :nullify
-  belongs_to :manager, class_name: 'Department', optional: true
+  belongs_to :manager, class_name: 'Employee', optional: true, foreign_key: 'manager_id'
 
   # Note: budget calculation would go through salaries of active employees
   # has_many :salaries, through: :employees
