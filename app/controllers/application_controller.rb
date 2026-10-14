@@ -2,7 +2,9 @@
 # Handles shared logic across all controllers including authentication
 class ApplicationController < ActionController::API
   # PaperTrail configuration - track user who made changes
-  around_action :paper_trail.with_version, only: [:create, :update, :destroy]
+  # PaperTrail automatically tracks changes when models have has_paper_trail
+  # The whodunnit is set via the paper_trail_whodunnit method
+  PaperTrail::VERSION # Ensure PaperTrail is loaded
 
   # Authentication helpers available to all controllers
   private
