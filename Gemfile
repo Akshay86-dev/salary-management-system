@@ -9,6 +9,8 @@ gem "propshaft"
 gem "devise"
 gem "rack-cors"
 gem "jsonapi-serializer"
+# Track changes to your models with versioning [https://github.com/paper-trail/gem_paper_trail]
+gem "paper_trail"
 # Use postgresql as the database for Active Record
 gem "pg", "~> 1.1"
 # Use the Puma web server [https://github.com/puma/puma]

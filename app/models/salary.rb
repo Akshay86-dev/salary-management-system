@@ -3,6 +3,9 @@
 # Salary model for salary management system
 # Tracks salary history with different types and effective dates
 class Salary < ApplicationRecord
+  # PaperTrail for versioning (track all salary changes)
+  has_paper_trail
+
   # Associations
   belongs_to :employee
 

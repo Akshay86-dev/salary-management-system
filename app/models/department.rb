@@ -3,6 +3,9 @@
 # Department model for salary management system
 # Each employee belongs to a department
 class Department < ApplicationRecord
+  # PaperTrail for versioning
+  has_paper_trail
+
   # Associations
   has_many :employees, dependent: :nullify
   belongs_to :manager, class_name: 'Department', optional: true

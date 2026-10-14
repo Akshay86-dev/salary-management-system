@@ -3,9 +3,12 @@
 # Employee model for salary management system
 # Represents an employee with personal info, job details, and salary history
 class Employee < ApplicationRecord
+  # PaperTrail for versioning
+  has_paper_trail
+
   # Associations
   belongs_to :department
-  belongs_to :location
+  belongs_to :location, optional: true
   has_many :salaries, dependent: :destroy
   has_one :current_salary, -> { where(is_current: true) }, class_name: 'Salary'
 
