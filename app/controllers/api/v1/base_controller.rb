@@ -7,6 +7,14 @@ class Api::V1::BaseController < ApplicationController
   # All API v1 endpoints require authentication by default
   before_action :authenticate_user!
 
+  # Health check endpoint
+  def health
+    render json: {
+      status: 'ok',
+      timestamp: Time.current.iso8601
+    }
+  end
+
   private
 
   # Render a standardized JSON error response
