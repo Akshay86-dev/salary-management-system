@@ -5,31 +5,27 @@ module Users
     def create
       request.format = :json if request.format.nil?
 
-      begin
-        self.resource = warden.authenticate!(auth_options)
-        sign_in(resource_name, resource)
-        yield resource if block_given?
+      self.resource = warden.authenticate!(auth_options)
+      sign_in(resource_name, resource)
+      yield resource if block_given?
 
-        token = generate_jwt_token(resource)
-        request.headers['Authorization'] = "Bearer #{token}" unless token.nil?
+      token = generate_jwt_token(resource)
+      response.headers['Authorization'] = "Bearer #{token}" unless token.nil?
 
-        render json: {
-          message: 'Signed in successfully.',
-          data: {
-            id: resource.id,
-            type: 'user',
-            attributes: {
-              email: resource.email,
-              first_name: resource.first_name,
-              last_name: resource.last_name,
-              full_name: resource.full_name
-            },
-            token: token
-          }
-        }, status: :ok
-      rescue Warden::JWT::Strategies::RevocationStrategies::Handler => e
-        render json: { error: 'Invalid email or password.' }, status: :unauthorized
-      end
+      render json: {
+        message: 'Signed in successfully.',
+        data: {
+          id: resource.id,
+          type: 'user',
+          attributes: {
+            email: resource.email,
+            first_name: resource.first_name,
+            last_name: resource.last_name,
+            full_name: resource.full_name
+          },
+          token: token
+        }
+      }, status: :ok
     end
 
     def destroy

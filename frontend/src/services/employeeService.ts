@@ -7,16 +7,53 @@ export interface Employee {
   last_name: string;
   email: string;
   job_title: string;
-  department_id: number;
+  department_id?: number;
   department?: {
     id: number;
     name: string;
   };
   hire_date: string;
-  salary: number;
-  created_at: string;
-  updated_at: string;
+  salary?: number;
+  created_at?: string;
+  updated_at?: string;
 }
+
+interface JsonApiEmployee {
+  id: number | string;
+  attributes: Pick<Employee, 'first_name' | 'last_name' | 'email' | 'job_title' | 'hire_date'> & {
+    employee_id?: string;
+    is_active?: boolean;
+    department_id?: number;
+    department_name?: string | null;
+    salary?: number | string | null;
+    full_name?: string;
+  };
+  relationships?: {
+    department?: {
+      data?: { id: number | string } | null;
+    };
+  };
+}
+
+export const normalizeEmployee = (record: Employee | JsonApiEmployee): Employee => {
+  if (!('attributes' in record)) {
+    return record;
+  }
+
+  const departmentId = record.relationships?.department?.data?.id;
+  const departmentName = record.attributes.department_name;
+  const salary = record.attributes.salary;
+
+  return {
+    ...record.attributes,
+    id: Number(record.id),
+    department_id: departmentId === undefined ? record.attributes.department_id : Number(departmentId),
+    department: departmentName && departmentId !== undefined
+      ? { id: Number(departmentId), name: departmentName }
+      : undefined,
+    salary: salary == null ? undefined : Number(salary),
+  };
+};
 
 // Employee service
 export const employeeService = {

@@ -39,7 +39,7 @@ frontend/
 ### Authentication Flow
 
 1. User logs in via `/login` route with email/password
-2. Credentials are sent to Rails API (`POST /users/sign_in`)
+2. Credentials are sent to Rails API (`POST /api/v1/users/sign_in`)
 3. Devise-JWT returns a JWT token in the Authorization header
 4. Token is stored in localStorage
 5. Subsequent API requests include `Authorization: Bearer <JWT>` header

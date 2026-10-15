@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import employeeService, { Employee } from '../services/employeeService';
+import employeeService, { Employee, normalizeEmployee } from '../services/employeeService';
+import { normalizeDepartment } from '../services/departmentService';
 
 // Custom hook for fetching all employees
 export const useEmployees = () => {
@@ -12,7 +13,7 @@ export const useEmployees = () => {
     setError(null);
     try {
       const data = await employeeService.getAll();
-      setEmployees(data.data || data.employees || []);
+      setEmployees((data.data || data.employees || []).map(normalizeEmployee));
     } catch (err: any) {
       setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch employees');
     } finally {
@@ -49,7 +50,8 @@ export const useEmployee = (id: number) => {
     setError(null);
     try {
       const data = await employeeService.getById(id);
-      setEmployee(data.data || data.employee || null);
+      const result = data.data || data.employee || null;
+      setEmployee(result ? normalizeEmployee(result) : null);
     } catch (err: any) {
       setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch employee');
     } finally {
@@ -85,7 +87,7 @@ export const useDepartments = () => {
       setError(null);
       try {
         const data = await employeeService.getAllDepartments();
-        setDepartments(data.data || data.departments || []);
+        setDepartments((data.data || data.departments || []).map(normalizeDepartment));
       } catch (err: any) {
         setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch departments');
       } finally {

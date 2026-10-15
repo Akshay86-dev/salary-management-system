@@ -6,9 +6,32 @@ export interface Department {
   name: string;
   budget: number | null;
   manager_id: number | null;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
+
+interface JsonApiDepartment {
+  id: number | string;
+  attributes: {
+    name: string;
+    budget: number | string | null;
+    manager_id: number | string | null;
+  };
+}
+
+export const normalizeDepartment = (record: Department | JsonApiDepartment): Department => {
+  if (!('attributes' in record)) {
+    return record;
+  }
+
+  const { budget, manager_id } = record.attributes;
+  return {
+    id: Number(record.id),
+    name: record.attributes.name,
+    budget: budget == null ? null : Number(budget),
+    manager_id: manager_id == null ? null : Number(manager_id),
+  };
+};
 
 // Department service
 export const departmentService = {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import departmentService, { Department } from '../services/departmentService';
+import departmentService, { Department, normalizeDepartment } from '../services/departmentService';
 
 // Custom hook for fetching all departments
 export const useDepartments = () => {
@@ -12,7 +12,7 @@ export const useDepartments = () => {
     setError(null);
     try {
       const data = await departmentService.getAll();
-      setDepartments(data.data || data.departments || []);
+      setDepartments((data.data || data.departments || []).map(normalizeDepartment));
     } catch (err: any) {
       setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch departments');
     } finally {
@@ -45,7 +45,8 @@ export const useDepartment = (id: number) => {
     setError(null);
     try {
       const data = await departmentService.getById(id);
-      setDepartment(data.data || data.department || null);
+      const result = data.data || data.department || null;
+      setDepartment(result ? normalizeDepartment(result) : null);
     } catch (err: any) {
       setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch department');
     } finally {

@@ -11,6 +11,14 @@ class EmployeeSerializer
     employee.full_name
   end
 
+  attribute :department_name do |employee|
+    employee.department&.name
+  end
+
+  attribute :salary do |employee|
+    employee.current_salary&.amount&.to_f
+  end
+
   belongs_to :department
   belongs_to :location, optional: true
 end

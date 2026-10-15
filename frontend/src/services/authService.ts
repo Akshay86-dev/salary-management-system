@@ -9,11 +9,17 @@ const authService = {
     });
     // Devise JWT returns token in Authorization header
     const authHeader = response.headers.authorization || response.headers.Authorization;
-    const token = authHeader ? authHeader.replace('Bearer ', '') : null;
+    const token = authHeader
+      ? authHeader.replace('Bearer ', '')
+      : response.data.data?.token || null;
     if (token) {
       localStorage.setItem('token', token);
     }
-    return { user: response.data.user, token };
+    const userData = response.data.data;
+    const user = userData
+      ? { id: userData.id, ...userData.attributes }
+      : response.data.user;
+    return { user, token };
   },
 
   // Logout current user
