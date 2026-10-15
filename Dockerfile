@@ -25,6 +25,7 @@ ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development" \
+    RAILS_SERVE_STATIC_FILES="true" \
     LD_PRELOAD="/usr/local/lib/libjemalloc.so"
 
 # Throw-away build stage to reduce size of final image
@@ -59,6 +60,11 @@ RUN yarn install --immutable
 
 # Copy application code
 COPY . .
+
+# Build the React application for Rails' public file server.
+RUN npm ci --prefix frontend && \
+    npm run build --prefix frontend && \
+    rm -rf frontend/node_modules
 
 # Precompile bootsnap code for faster boot times.
 # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495

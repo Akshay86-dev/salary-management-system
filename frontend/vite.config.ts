@@ -19,6 +19,7 @@ export default defineConfig(({ command, mode }) => {
   const isProduction = mode === 'production';
 
   return {
+    base: command === 'build' ? '/vite/' : '/',
     plugins: [react()],
     server: {
       host: 'localhost',
