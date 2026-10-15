@@ -28,7 +28,7 @@ class Api::V1::EmployeesController < Api::V1::BaseController
         employee.salaries.create!(
           amount: salary_amount,
           currency: "USD",
-          salary_type: Salary::SALARY_TYPES.fetch(:base),
+          salary_type: :base,
           effective_date: employee.hire_date,
           is_current: true
         )

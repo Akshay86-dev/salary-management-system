@@ -131,7 +131,7 @@ class Api::V1::SalariesTest < ActionDispatch::IntegrationTest
       employee: employee,
       amount: 50_000,
       currency: "USD",
-      salary_type: Salary::SALARY_TYPES.fetch(:base),
+      salary_type: :base,
       effective_date: effective_date,
       is_current: is_current
     )
@@ -142,7 +142,7 @@ class Api::V1::SalariesTest < ActionDispatch::IntegrationTest
       employee_id: employee.id,
       amount: 60_000,
       currency: "USD",
-      salary_type: Salary::SALARY_TYPES.fetch(:base),
+      salary_type: :base,
       effective_date: Date.current,
       is_current: false
     }

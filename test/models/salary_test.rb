@@ -20,7 +20,7 @@ class SalaryTest < ActiveSupport::TestCase
     previous_salary = employee.salaries.create!(
       amount: 50_000,
       currency: "USD",
-      salary_type: Salary::SALARY_TYPES[:base],
+      salary_type: :base,
       effective_date: Date.yesterday,
       is_current: true
     )
@@ -28,7 +28,7 @@ class SalaryTest < ActiveSupport::TestCase
     new_salary = employee.salaries.create!(
       amount: 60_000,
       currency: "USD",
-      salary_type: Salary::SALARY_TYPES[:base],
+      salary_type: :base,
       effective_date: Date.current,
       is_current: true
     )

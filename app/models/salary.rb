@@ -12,41 +12,23 @@ class Salary < ApplicationRecord
   # Validations
   validates :amount, :currency, :effective_date, :salary_type, presence: true
   validates :amount, numericality: { greater_than: 0 }
-  validates :is_current, inclusion: { in: [true, false] }
-  validates :currency, length: { is: 3 }, format: { with: /\A[A-Z]{3}\z/, message: 'must be a valid ISO 4217 currency code' }
+  validates :is_current, inclusion: { in: [ true, false ] }
+  validates :currency, length: { is: 3 }, format: { with: /\A[A-Z]{3}\z/, message: "must be a valid ISO 4217 currency code" }
   before_save :clear_existing_current_salary, if: :is_current?
 
-  # Salary types as constants (enum alternative)
-  SALARY_TYPES = {
+  enum :salary_type, {
     base: 0,
     bonus: 1,
     commission: 2,
     equity: 3
-  }.freeze
+  }, validate: true
 
   # Scopes
   scope :active_salaries, -> { where(is_current: true) }
   scope :by_employee, ->(id) { where(employee_id: id) }
   scope :for_currency, ->(currency) { where(currency: currency) }
-  scope :base_salaries, -> { where(salary_type: SALARY_TYPES[:base]) }
+  scope :base_salaries, -> { where(salary_type: :base) }
   scope :ordered, -> { order(effective_date: :desc) }
-
-  # Instance methods for enum-like behavior
-  def base_salary?
-    salary_type == SALARY_TYPES[:base]
-  end
-
-  def bonus_salary?
-    salary_type == SALARY_TYPES[:bonus]
-  end
-
-  def commission_salary?
-    salary_type == SALARY_TYPES[:commission]
-  end
-
-  def equity_salary?
-    salary_type == SALARY_TYPES[:equity]
-  end
 
   def amount_format
     "#{currency} #{amount}"

@@ -28,7 +28,7 @@ class User < ApplicationRecord
   belongs_to :location, optional: true
   has_many :salaries, foreign_key: :employee_id, dependent: :destroy
   has_one :current_salary,
-          -> { where(is_current: true, salary_type: Salary::SALARY_TYPES[:base]).order(effective_date: :desc, id: :desc) },
+          -> { where(is_current: true, salary_type: :base).order(effective_date: :desc, id: :desc) },
           class_name: "Salary",
           foreign_key: :employee_id
 
@@ -48,7 +48,7 @@ class User < ApplicationRecord
   scope :inactive, -> { employee_records.where(is_active: false) }
   scope :search, ->(query) {
     where.not(employee_id: nil).where(
-      "lower(concat_ws(' ', first_name, last_name)) LIKE :q OR lower(first_name) LIKE :q OR lower(last_name) LIKE :q OR lower(email) LIKE :q OR lower(employee_id) LIKE :q OR lower(job_title) LIKE :q",
+      "lower(concat_ws(' ', first_name, last_name)) LIKE :q OR lower(first_name) LIKE :q OR lower(last_name) LIKE :q OR lower(email) LIKE :q OR lower(users.employee_id) LIKE :q OR lower(job_title) LIKE :q",
       q: "%#{query.to_s.downcase}%"
     )
   }

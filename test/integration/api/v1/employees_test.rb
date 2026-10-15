@@ -60,6 +60,6 @@ class Api::V1::EmployeesTest < ActionDispatch::IntegrationTest
     assert_equal "EMP-00042", existing_employee.reload.employee_id
     salary = Salary.find_by!(employee_id: employee_id)
     assert_equal 5_000, salary.amount.to_i
-    assert_equal Salary::SALARY_TYPES.fetch(:base), salary.salary_type
+    assert_equal "base", salary.salary_type
   end
 end

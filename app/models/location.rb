@@ -17,15 +17,15 @@ class Location < ApplicationRecord
   scope :ordered, -> { order(:name) }
   scope :by_state, ->(state) { where(state: state) }
   scope :search, ->(query) {
-    where('lower(name) LIKE :q OR lower(city) LIKE :q OR lower(state) LIKE :q',
+    where("lower(name) LIKE :q OR lower(city) LIKE :q OR lower(state) LIKE :q",
           q: "%#{query.to_s.downcase}%")
   }
 
   # Instance methods
   def full_address
- s   parts = [address, city, state, zip_code].compact
+    parts = [ address, city, state, zip_code ].compact
     return name if parts.empty?
-    parts.join(', ')
+    parts.join(", ")
   end
 
   def formatted_location

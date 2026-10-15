@@ -53,10 +53,15 @@ class Api::V1::SalariesController < Api::V1::BaseController
 
   # Strong parameters for salary attributes
   def salary_params
-    params.require(:data).require(:attributes).permit(
+    attributes = params.require(:data).require(:attributes).permit(
       :employee_id, :amount, :currency, :salary_type,
       :effective_date, :is_current
     )
+    value = attributes[:salary_type]
+    if value.present? && value.to_s.match?(/\A\d+\z/)
+      attributes[:salary_type] = Salary.salary_types.key(value.to_i) || value
+    end
+    attributes
   end
 
   def filtered_salaries
