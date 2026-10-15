@@ -28,7 +28,7 @@ class Api::V1::LocationsController < Api::V1::BaseController
     if location.save
       render json: LocationSerializer.new(location), status: :created
     else
-      render json: { errors: location.errors }, status: :unprocessable_entity
+      render_validation_errors(location)
     end
   end
 
@@ -40,7 +40,7 @@ class Api::V1::LocationsController < Api::V1::BaseController
     if location.update(location_params)
       render json: LocationSerializer.new(location)
     else
-      render json: { errors: location.errors }, status: :unprocessable_entity
+      render_validation_errors(location)
     end
   end
 

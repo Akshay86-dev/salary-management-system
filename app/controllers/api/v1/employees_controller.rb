@@ -32,7 +32,7 @@ class Api::V1::EmployeesController < Api::V1::BaseController
     if employee.save
       render json: EmployeeSerializer.new(employee), status: :created
     else
-      render json: { errors: employee.errors }, status: :unprocessable_entity
+      render_validation_errors(employee)
     end
   end
 
@@ -44,7 +44,7 @@ class Api::V1::EmployeesController < Api::V1::BaseController
     if employee.update(employee_params)
       render json: EmployeeSerializer.new(employee)
     else
-      render json: { errors: employee.errors }, status: :unprocessable_entity
+      render_validation_errors(employee)
     end
   end
 

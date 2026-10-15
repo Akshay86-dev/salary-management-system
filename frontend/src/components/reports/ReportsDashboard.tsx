@@ -1,5 +1,7 @@
 import React from 'react';
 import { useReports } from '../../hooks/useReportsData';
+import { usePagination } from '../../hooks/usePagination';
+import Pagination from '../common/Pagination';
 
 const ReportsDashboard: React.FC = () => {
   const {
@@ -11,6 +13,10 @@ const ReportsDashboard: React.FC = () => {
     error,
     refetch,
   } = useReports();
+  const totalsPagination = usePagination(salaryTotalsByDepartment);
+  const jobTitlePagination = usePagination(averageSalaryByJobTitle);
+  const comparisonPagination = usePagination(departmentComparison);
+  const currencyPagination = usePagination(salaryByCurrency);
 
   if (loading) {
     return (
@@ -44,7 +50,7 @@ const ReportsDashboard: React.FC = () => {
             <tr><th>Department</th><th>Total Salary</th></tr>
           </thead>
           <tbody>
-            {salaryTotalsByDepartment.map((item: any) => (
+            {totalsPagination.items.map((item: any) => (
               <tr key={item.department}>
                 <td>{item.department}</td>
                 <td>{item.formatted_total || `$${item.total_salary?.toLocaleString()}`}</td>
@@ -52,6 +58,16 @@ const ReportsDashboard: React.FC = () => {
             ))}
           </tbody>
         </table>
+        <Pagination
+          page={totalsPagination.page}
+          pageSize={totalsPagination.pageSize}
+          totalItems={totalsPagination.totalItems}
+          totalPages={totalsPagination.totalPages}
+          startItem={totalsPagination.startItem}
+          endItem={totalsPagination.endItem}
+          onPageChange={totalsPagination.setPage}
+          onPageSizeChange={totalsPagination.setPageSize}
+        />
       </div>
 
       <div className="card" style={{ marginBottom: '2rem' }}>
@@ -61,7 +77,7 @@ const ReportsDashboard: React.FC = () => {
             <tr><th>Job Title</th><th>Average Salary</th></tr>
           </thead>
           <tbody>
-            {averageSalaryByJobTitle.map((item: any) => (
+            {jobTitlePagination.items.map((item: any) => (
               <tr key={item.job_title}>
                 <td>{item.job_title}</td>
                 <td>{item.formatted_average || `$${item.average_salary?.toLocaleString()}`}</td>
@@ -69,6 +85,16 @@ const ReportsDashboard: React.FC = () => {
             ))}
           </tbody>
         </table>
+        <Pagination
+          page={jobTitlePagination.page}
+          pageSize={jobTitlePagination.pageSize}
+          totalItems={jobTitlePagination.totalItems}
+          totalPages={jobTitlePagination.totalPages}
+          startItem={jobTitlePagination.startItem}
+          endItem={jobTitlePagination.endItem}
+          onPageChange={jobTitlePagination.setPage}
+          onPageSizeChange={jobTitlePagination.setPageSize}
+        />
       </div>
 
       <div className="card" style={{ marginBottom: '2rem' }}>
@@ -78,7 +104,7 @@ const ReportsDashboard: React.FC = () => {
             <tr><th>Department</th><th>Budget</th><th>Employees</th><th>Total Salary</th><th>Average Salary</th></tr>
           </thead>
           <tbody>
-            {departmentComparison.map((item: any) => (
+            {comparisonPagination.items.map((item: any) => (
               <tr key={item.department}>
                 <td>{item.department}</td>
                 <td>${item.budget?.toLocaleString() || 'N/A'}</td>
@@ -89,6 +115,16 @@ const ReportsDashboard: React.FC = () => {
             ))}
           </tbody>
         </table>
+        <Pagination
+          page={comparisonPagination.page}
+          pageSize={comparisonPagination.pageSize}
+          totalItems={comparisonPagination.totalItems}
+          totalPages={comparisonPagination.totalPages}
+          startItem={comparisonPagination.startItem}
+          endItem={comparisonPagination.endItem}
+          onPageChange={comparisonPagination.setPage}
+          onPageSizeChange={comparisonPagination.setPageSize}
+        />
       </div>
 
       <div className="card">
@@ -98,7 +134,7 @@ const ReportsDashboard: React.FC = () => {
             <tr><th>Currency</th><th>Total Amount</th></tr>
           </thead>
           <tbody>
-            {salaryByCurrency.map((item: any) => (
+            {currencyPagination.items.map((item: any) => (
               <tr key={item.currency}>
                 <td>{item.currency}</td>
                 <td>{item.formatted_total || `${item.total_amount?.toLocaleString()}`}</td>
@@ -106,6 +142,16 @@ const ReportsDashboard: React.FC = () => {
             ))}
           </tbody>
         </table>
+        <Pagination
+          page={currencyPagination.page}
+          pageSize={currencyPagination.pageSize}
+          totalItems={currencyPagination.totalItems}
+          totalPages={currencyPagination.totalPages}
+          startItem={currencyPagination.startItem}
+          endItem={currencyPagination.endItem}
+          onPageChange={currencyPagination.setPage}
+          onPageSizeChange={currencyPagination.setPageSize}
+        />
       </div>
     </div>
   );

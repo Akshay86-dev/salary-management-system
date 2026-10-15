@@ -38,3 +38,54 @@
 !/app/assets/builds/.keep
 
 /node_modules
+
+# Ignore npm lock files (optional - uncomment if needed)
+# /frontend/package-lock.json
+
+# Ignore Vite build output for API endpoints serving the frontend
+/public/vite/
+
+# Ignore cookies/sessions file
+cookies.txt
+
+# Ignore log files
+/log/*
+
+# Ignore temp files
+/tmp/*
+
+# Ignore IDE/editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Ignore OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Ignore coverage reports
+/coverage
+/coverage/*
+
+# Ignore Spring application preloader
+/tmp/spring*
+
+# Ignore extra directories
+/db/*.sqlite3
+/db/*.sqlite3-journal
+!/db/schema.rb
+!/db/structure.sql
+
+# Ignore seed data files (if any large data files exist)
+/db/seeds_data.rb
+
+# Ignore secret credentials
+/config/master.key
+/config/credentials.yml.enc

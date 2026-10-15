@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useDepartments, useDepartmentMutation } from '../../hooks/useDepartmentData';
 import { Department } from '../../services/departmentService';
+import { usePagination } from '../../hooks/usePagination';
+import Pagination from '../common/Pagination';
 
 const DepartmentManagement: React.FC = () => {
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
@@ -13,6 +15,7 @@ const DepartmentManagement: React.FC = () => {
   });
   const { departments, loading, error, refetch: refetchDepartments } = useDepartments();
   const { createDepartment, updateDepartment, deleteDepartment, loading: mutationLoading, error: mutationError } = useDepartmentMutation();
+  const pagination = usePagination(departments);
 
   const handleDelete = async (id: number) => {
     if (deleteConfirmId !== id) {
@@ -141,7 +144,7 @@ const DepartmentManagement: React.FC = () => {
             <tr><th>ID</th><th>Name</th><th>Budget</th><th>Manager ID</th><th>Actions</th></tr>
           </thead>
           <tbody>
-            {departments.map((dept: any) => (
+            {pagination.items.map((dept: any) => (
               <tr key={dept.id}>
                 <td>{dept.id}</td>
                 <td>{dept.name}</td>
@@ -159,6 +162,16 @@ const DepartmentManagement: React.FC = () => {
             ))}
           </tbody>
         </table>
+        <Pagination
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          totalItems={pagination.totalItems}
+          totalPages={pagination.totalPages}
+          startItem={pagination.startItem}
+          endItem={pagination.endItem}
+          onPageChange={pagination.setPage}
+          onPageSizeChange={pagination.setPageSize}
+        />
       </div>
     </div>
   );

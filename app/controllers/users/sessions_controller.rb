@@ -2,6 +2,8 @@
 
 module Users
   class SessionsController < Devise::SessionsController
+    skip_before_action :verify_signed_out_user, only: :destroy
+
     def create
       request.format = :json if request.format.nil?
 

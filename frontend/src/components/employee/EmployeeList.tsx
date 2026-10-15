@@ -90,10 +90,10 @@ const EmployeeList: React.FC = () => {
         <div>
           <h1 style={{ color: 'var(--color-text-primary)' }}>Employees</h1>
           <p style={{ color: 'var(--color-text-secondary)' }}>
-            {employees.length.toLocaleString()} people in the salary registry
+            {employees.length.toLocaleString()} employees found
           </p>
         </div>
-        <button 
+        <button
           className="btn btn-primary"
           onClick={() => navigate('/employees/new')}
         >
@@ -172,43 +172,51 @@ const EmployeeList: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {pagination.items.map((employee: any) => (
-              <tr key={employee.id}>
-                <td>{employee.id}</td>
-                <td>{employee.first_name} {employee.last_name}</td>
-                <td>{employee.email}</td>
-                <td>{employee.department?.name || 'N/A'}</td>
-                <td>{employee.job_title || 'N/A'}</td>
-                <td>{employee.hire_date || 'N/A'}</td>
-                <td>${employee.salary?.toLocaleString() || 'N/A'}</td>
-                <td>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button 
-                      className="btn btn-secondary"
-                      style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}
-                      onClick={() => handleView(employee.id)}
-                    >
-                      View
-                    </button>
-                    <button 
-                      className="btn btn-secondary"
-                      style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}
-                      onClick={() => handleEdit(employee.id)}
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      className="btn btn-danger"
-                      style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}
-                      onClick={() => handleDelete(employee.id)}
-                      disabled={deleteLoading}
-                    >
-                      {deleteConfirmId === employee.id ? 'Confirm?' : 'Delete'}
-                    </button>
-                  </div>
+            {pagination.items.length === 0 ? (
+              <tr>
+                <td colSpan={8} style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: '1.5rem' }}>
+                  No employees match these filters.
                 </td>
               </tr>
-            ))}
+            ) : (
+              pagination.items.map((employee: any) => (
+                <tr key={employee.id}>
+                  <td>{employee.id}</td>
+                  <td>{employee.first_name} {employee.last_name}</td>
+                  <td>{employee.email}</td>
+                  <td>{employee.department?.name || 'N/A'}</td>
+                  <td>{employee.job_title || 'N/A'}</td>
+                  <td>{employee.hire_date || 'N/A'}</td>
+                  <td>${employee.salary?.toLocaleString() || 'N/A'}</td>
+                  <td>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button
+                        className="btn btn-secondary"
+                        style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}
+                        onClick={() => handleView(employee.id)}
+                      >
+                        View
+                      </button>
+                      <button
+                        className="btn btn-secondary"
+                        style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}
+                        onClick={() => handleEdit(employee.id)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn btn-danger"
+                        style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}
+                        onClick={() => handleDelete(employee.id)}
+                        disabled={deleteLoading}
+                      >
+                        {deleteConfirmId === employee.id ? 'Confirm?' : 'Delete'}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
         <Pagination

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useLocations, useLocationMutation } from '../../hooks/useLocationData';
 import { Location } from '../../services/locationService';
+import { usePagination } from '../../hooks/usePagination';
+import Pagination from '../common/Pagination';
 
 const LocationManagement: React.FC = () => {
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
@@ -18,6 +20,7 @@ const LocationManagement: React.FC = () => {
   });
   const { locations, loading, error, refetch: refetchLocations } = useLocations();
   const { createLocation, updateLocation, deleteLocation, loading: mutationLoading, error: mutationError } = useLocationMutation();
+  const pagination = usePagination(locations);
 
   const handleDelete = async (id: number) => {
     if (deleteConfirmId !== id) {
@@ -179,7 +182,7 @@ const LocationManagement: React.FC = () => {
             <tr><th>ID</th><th>Name</th><th>City</th><th>State</th><th>Country</th><th>Actions</th></tr>
           </thead>
           <tbody>
-            {locations.map((loc: any) => (
+            {pagination.items.map((loc: any) => (
               <tr key={loc.id}>
                 <td>{loc.id}</td>
                 <td>{loc.name}</td>
@@ -198,6 +201,16 @@ const LocationManagement: React.FC = () => {
             ))}
           </tbody>
         </table>
+        <Pagination
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          totalItems={pagination.totalItems}
+          totalPages={pagination.totalPages}
+          startItem={pagination.startItem}
+          endItem={pagination.endItem}
+          onPageChange={pagination.setPage}
+          onPageSizeChange={pagination.setPageSize}
+        />
       </div>
     </div>
   );

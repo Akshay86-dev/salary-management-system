@@ -9,6 +9,7 @@ Rails.application.routes.draw do
     namespace :v1 do
       # Health check endpoint (no authentication required)
       get 'health', to: 'health#index'
+      get 'dashboard/stats', to: 'dashboard#stats'
       
       # Auth endpoints
       get 'auth/profile', to: 'auth#profile'

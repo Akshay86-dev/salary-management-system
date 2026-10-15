@@ -25,7 +25,7 @@ class Employee < ApplicationRecord
   scope :inactive, -> { where(is_active: false) }
   scope :ordered, -> { order(:last_name, :first_name) }
   scope :search, ->(query) {
-    where('lower(first_name) LIKE :q OR lower(last_name) LIKE :q OR lower(email) LIKE :q OR lower(employee_id) LIKE :q OR lower(job_title) LIKE :q',
+    where("lower(concat_ws(' ', first_name, last_name)) LIKE :q OR lower(first_name) LIKE :q OR lower(last_name) LIKE :q OR lower(email) LIKE :q OR lower(employee_id) LIKE :q OR lower(job_title) LIKE :q",
           q: "%#{query.to_s.downcase}%")
   }
 

@@ -25,7 +25,7 @@ class Api::V1::DepartmentsController < Api::V1::BaseController
     if department.save
       render json: DepartmentSerializer.new(department), status: :created
     else
-      render json: { errors: department.errors }, status: :unprocessable_entity
+      render_validation_errors(department)
     end
   end
 
@@ -37,7 +37,7 @@ class Api::V1::DepartmentsController < Api::V1::BaseController
     if department.update(department_params)
       render json: DepartmentSerializer.new(department)
     else
-      render json: { errors: department.errors }, status: :unprocessable_entity
+      render_validation_errors(department)
     end
   end
 
