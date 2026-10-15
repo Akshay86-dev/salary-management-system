@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "lib": ["esnext", "node"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["../src/*"]
+    }
+  },
+  "exclude": ["node_modules", "vite.config.ts"]
+}
