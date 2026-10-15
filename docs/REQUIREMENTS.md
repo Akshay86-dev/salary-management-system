@@ -38,7 +38,7 @@ Build employee salary management software for an organization with 10,000 employ
 - Backend: Ruby on Rails 8.x (monolithic, API + server-rendered views)
 - Frontend: React.js integrated with Rails via API endpoints
 - Database: PostgreSQL for data persistence
-- Authentication: Device-based authentication using Devise (session/cookie-based)
+- Authentication: Devise authentication with JWT bearer tokens
 - Audit Trail: Automatic logging of all data changes
 - Deployment: Docker containerized, deployable to any cloud provider
 
@@ -52,11 +52,12 @@ Build employee salary management software for an organization with 10,000 employ
 
 ## Authentication
 
-1. Device-based authentication using Devise (session/cookie-based).
+1. Devise authentication with JWT bearer tokens.
 2. Single user type: HR Manager.
 3. Authentication is required for all API endpoints.
 4. Users authenticate via login endpoint using Devise sessions.
-5. Session cookie is used for subsequent API requests.
+5. The frontend stores the token and sends it in the `Authorization` header for
+   subsequent API requests.
 
 ## Audit Trail
 
