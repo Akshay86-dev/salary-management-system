@@ -2,13 +2,15 @@
 
 ## Models & Relationships
 
-### 1. User (HR Manager)
+### 1. User (account and employee profile)
 
 ```ruby
 class User < ApplicationRecord
-  devise :database_authenticatable, :registerable,
+  devise :database_authenticatable,
          :recoverable, :rememberable, :validatable,
          :timeoutable, :trackable
+  enum :role, { employee: "EMPLOYEE", human_resource: "HUMAN_RESOURCE" },
+       default: :employee
 
   validates :first_name, :last_name, :email, presence: true
 end
@@ -19,11 +21,20 @@ end
 - `last_name: string`
 - `email: string` (unique, used for login)
 - `encrypted_password: string`
+- `role: string` (`EMPLOYEE` or `HUMAN_RESOURCE`; defaults to `EMPLOYEE`)
+- `employee_id`, `job_title`, `hire_date`, `department_id`, `location_id`,
+  and `is_active` for employee profiles
 - `created_at`, `updated_at` timestamps
 
 **Relationships:**
-- `has_many :audits` (audit records created by this user)
-- No association with Employee or Salary directly
+- `belongs_to :department` and `belongs_to :location` for employee profiles
+- `has_many :salaries` for employee profiles
+- `has_many :versions` (PaperTrail records associated with this user)
+
+HR users may omit employee profile fields. Employee-profile data is identified
+by a non-null `employee_id`; only HR-role users may authenticate or access
+protected API endpoints. See [roles_and_authentication.md](roles_and_authentication.md)
+for migration and security details.
 
 ### 2. Audit
 
@@ -55,44 +66,24 @@ end
 **Relationships:**
 - `belongs_to :user` (optional, for system actions like seeding)
 
-### 3. Employee
+### 3. Employee profile (stored on User)
 
 ```ruby
-class Employee < ApplicationRecord
-  belongs_to :department
-  belongs_to :location
-  has_many :salaries, dependent: :destroy
-  has_one :current_salary, -> { where(is_current: true) }, class_name: 'Salary'
-
-  validates :first_name, :last_name, :email, :employee_id, :job_title, :hire_date, presence: true
-  validates :email, uniqueness: true
-  validates :employee_id, uniqueness: true
+class User < ApplicationRecord
+  belongs_to :department, optional: true
+  belongs_to :location, optional: true
+  has_many :salaries, foreign_key: :employee_id
 end
 ```
 
-**Fields:**
-- `first_name: string`
-- `last_name: string`
-- `email: string`
-- `employee_id: string` (unique identifier like "EMP-00001")
-- `job_title: string`
-- `hire_date: date`
-- `department_id: integer` (foreign key)
-- `location_id: integer` (foreign key)
-- `is_active: boolean` (default: true, for soft delete)
-- `created_at`, `updated_at` timestamps
-
-**Relationships:**
-- `belongs_to :department`
-- `belongs_to :location`
-- `has_many :salaries` (salary history)
-- `has_one :current_salary` (the salary with `is_current: true`)
+The former employee columns live in the `users` table. The existing employees
+API remains available, but operates on `User` records with employee profiles.
 
 ### 4. Salary
 
 ```ruby
 class Salary < ApplicationRecord
-  belongs_to :employee
+  belongs_to :employee, class_name: 'User', foreign_key: :employee_id
   enum salary_type: { base: 0, bonus: 1, commission: 2, equity: 3 }
 
   validates :amount, :currency, :effective_date, :salary_type, presence: true
@@ -119,8 +110,8 @@ end
 
 ```ruby
 class Department < ApplicationRecord
-  has_many :employees, dependent: :destroy
-  belongs_to :manager, class_name: 'Employee', optional: true
+  has_many :employees, class_name: 'User', dependent: :nullify
+  belongs_to :manager, class_name: 'User', optional: true
 
   validates :name, presence: true, uniqueness: true
 end
@@ -129,7 +120,7 @@ end
 **Fields:**
 - `name: string`
 - `budget: decimal`
-- `manager_id: integer` (optional, references Employee)
+- `manager_id: integer` (optional, references User)
 - `created_at`, `updated_at` timestamps
 
 **Relationships:**
@@ -147,20 +138,15 @@ Audit
   - auditable_type (employee, salary, department, location)
   - auditable_id
 
-Employee
-  - department_id -> Department
-  - location_id -> Location
-  - has_many :salaries
-
 Salary
-  - employee_id -> Employee
+  - employee_id -> User
 
 Department
-  - manager_id -> Employee (optional, self-referencing)
+  - manager_id -> User
   - has_many :employees
 
 Location
-  - has_many :employees
+  - has_many employee-profile users
 ```
 
 ## Authentication Endpoints

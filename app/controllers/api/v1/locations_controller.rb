@@ -6,11 +6,7 @@ class Api::V1::LocationsController < Api::V1::BaseController
   # GET /api/v1/locations
   # List all locations with optional filtering
   def index
-    locations = Location.ordered
-    locations = Location.by_state(params[:state]) if params[:state].present?
-    locations = Location.search(params[:query]) if params[:query].present?
-
-    render json: LocationSerializer.new(locations, is_collection: true)
+    render json: LocationSerializer.new(filtered_locations, is_collection: true)
   end
 
   # GET /api/v1/locations/:id
@@ -50,7 +46,7 @@ class Api::V1::LocationsController < Api::V1::BaseController
     location = Location.find(params[:id])
     location.destroy!
 
-    render json: null, status: :no_content
+    head :no_content
   end
 
   private
@@ -60,5 +56,12 @@ class Api::V1::LocationsController < Api::V1::BaseController
     params.require(:data).require(:attributes).permit(
       :name, :address, :city, :state, :zip_code, :country, :latitude, :longitude
     )
+  end
+
+  def filtered_locations
+    locations = Location.ordered
+    locations = Location.by_state(params[:state]) if params[:state].present?
+    locations = Location.search(params[:query]) if params[:query].present?
+    locations
   end
 end

@@ -5,7 +5,7 @@
 class SalarySerializer
   include JSONAPI::Serializer
 
-  attributes :amount, :currency, :salary_type, :effective_date, :is_current
+  attributes :employee_id, :amount, :currency, :salary_type, :effective_date, :is_current
 
   attribute :formatted_amount do |salary|
     salary.amount_format

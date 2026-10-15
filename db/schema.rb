@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_14_135500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_15_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -21,24 +21,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_135500) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_departments_on_name", unique: true
-  end
-
-  create_table "employees", force: :cascade do |t|
-    t.string "first_name", null: false
-    t.string "last_name", null: false
-    t.string "email", null: false
-    t.string "employee_id", null: false
-    t.string "job_title", null: false
-    t.date "hire_date", null: false
-    t.bigint "department_id", null: false
-    t.bigint "location_id", null: false
-    t.boolean "is_active", default: true
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["department_id"], name: "index_employees_on_department_id"
-    t.index ["email"], name: "index_employees_on_email", unique: true
-    t.index ["employee_id"], name: "index_employees_on_employee_id", unique: true
-    t.index ["location_id"], name: "index_employees_on_location_id"
   end
 
   create_table "jwt_blacklists", force: :cascade do |t|
@@ -74,8 +56,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_135500) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["employee_id", "is_current"], name: "index_salaries_on_employee_id_and_is_current"
-    t.index ["employee_id", "salary_type", "is_current"], name: "index_salaries_on_current_by_type", where: "(is_current = true)"
-    t.index ["employee_id"], name: "index_salaries_on_employee_id"
+    t.index ["employee_id", "salary_type"], name: "index_salaries_on_current_by_type", unique: true, where: "(is_current = true)"
   end
 
   create_table "users", force: :cascade do |t|
@@ -93,8 +74,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_135500) do
     t.datetime "last_sign_in_at"
     t.string "current_sign_in_ip"
     t.string "last_sign_in_ip"
-    t.index ["email"], name: "index_users_on_email", unique: true
+    t.string "role", default: "EMPLOYEE", null: false
+    t.string "employee_id"
+    t.string "job_title"
+    t.date "hire_date"
+    t.bigint "department_id"
+    t.bigint "location_id"
+    t.boolean "is_active", default: true, null: false
+    t.index "lower((email)::text)", name: "index_users_on_lower_email", unique: true
+    t.index ["department_id"], name: "index_users_on_department_id"
+    t.index ["employee_id"], name: "index_users_on_employee_id", unique: true, where: "(employee_id IS NOT NULL)"
+    t.index ["location_id"], name: "index_users_on_location_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.check_constraint "role::text <> 'EMPLOYEE'::text OR employee_id IS NOT NULL AND job_title IS NOT NULL AND hire_date IS NOT NULL AND department_id IS NOT NULL AND location_id IS NOT NULL", name: "users_employee_details_required"
+    t.check_constraint "role::text = ANY (ARRAY['EMPLOYEE'::character varying::text, 'HUMAN_RESOURCE'::character varying::text])", name: "users_role_allowed_values"
   end
 
   create_table "versions", force: :cascade do |t|
@@ -107,8 +100,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_135500) do
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
   end
 
-  add_foreign_key "departments", "employees", column: "manager_id"
-  add_foreign_key "employees", "departments"
-  add_foreign_key "employees", "locations"
-  add_foreign_key "salaries", "employees"
+  add_foreign_key "departments", "users", column: "manager_id"
+  add_foreign_key "salaries", "users", column: "employee_id"
+  add_foreign_key "users", "departments"
+  add_foreign_key "users", "locations"
 end

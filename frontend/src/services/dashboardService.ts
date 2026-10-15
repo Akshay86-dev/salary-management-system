@@ -3,7 +3,9 @@ import apiClient from './api';
 export interface DashboardStats {
   total_departments: number;
   total_employees: number;
-  total_salaries: number;
+  total_countries: number;
+  employees_by_department: Array<{ name: string; count: number }>;
+  employees_by_country: Array<{ name: string; count: number }>;
 }
 
 const dashboardService = {

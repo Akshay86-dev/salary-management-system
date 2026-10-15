@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useSalaryMutation, useEmployeeOptions } from '../../hooks/useSalaryData';
+import { useSalary, useSalaryMutation, useEmployeeOptions } from '../../hooks/useSalaryData';
 import { Salary } from '../../services/salaryService';
 
 const SALARY_TYPES = [
@@ -11,11 +11,14 @@ const SALARY_TYPES = [
 ];
 
 const SalaryForm: React.FC = () => {
-  const { id: employeeIdParam } = useParams<{ id?: string }>();
+  const { id: employeeIdParam, salaryId: salaryIdParam } = useParams<{ id?: string; salaryId?: string }>();
+  const salaryId = salaryIdParam ? Number(salaryIdParam) : 0;
+  const editing = salaryId > 0;
   const navigate = useNavigate();
 
   const { employees, loading: loadingEmployees } = useEmployeeOptions();
-  const { createSalary, loading, error: mutationError } = useSalaryMutation();
+  const { salary, loading: loadingSalary, error: salaryError } = useSalary(salaryId);
+  const { createSalary, updateSalary, loading, error: mutationError } = useSalaryMutation();
   const today = new Date().toISOString().split('T')[0];
 
   const [formData, setFormData] = useState({
@@ -27,6 +30,19 @@ const SalaryForm: React.FC = () => {
     is_current: 'true',
   });
   const [formError, setFormError] = useState('');
+
+  useEffect(() => {
+    if (!salary || !editing) return;
+
+    setFormData({
+      employee_id: String(salary.employee_id),
+      amount: String(salary.amount),
+      currency: salary.currency,
+      salary_type: String(salary.salary_type),
+      effective_date: salary.effective_date,
+      is_current: String(salary.is_current),
+    });
+  }, [editing, salary]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -67,25 +83,46 @@ const SalaryForm: React.FC = () => {
         is_current: formData.is_current === 'true',
       };
 
-      await createSalary(salaryData);
+      if (editing) {
+        delete salaryData.employee_id;
+        await updateSalary(salaryId, salaryData);
+      } else {
+        await createSalary(salaryData);
+      }
 
-      navigate('/employees');
+      navigate(`/employees/${employeeIdParam}`);
     } catch (err: any) {
       setFormError(err.response?.data?.errors?.[0] || err.message || 'Failed to save salary');
     }
   };
 
+  if (editing && loadingSalary) {
+    return (
+      <div className="flex-center" style={{ padding: '2rem' }}>
+        <span className="loader" />
+      </div>
+    );
+  }
+
+  if (editing && (salaryError || !salary || salary.employee_id !== Number(employeeIdParam))) {
+    return (
+      <div role="alert" style={{ color: 'var(--color-error)', padding: '1rem' }}>
+        {salaryError || 'Salary record not found for this employee.'}
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex" style={{ marginBottom: '1rem' }}>
         <h1 style={{ color: 'var(--color-text-primary)' }}>
-          Add New Salary
+          {editing ? 'Edit Salary' : 'Add New Salary'}
         </h1>
         <button
           className="btn btn-secondary"
-          onClick={() => navigate('/employees')}
+          onClick={() => navigate(editing ? `/employees/${employeeIdParam}` : '/employees')}
         >
-          Back to List
+          {editing ? 'Back to Employee' : 'Back to List'}
         </button>
       </div>
 
@@ -105,7 +142,7 @@ const SalaryForm: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit}>
-          <div>
+          {!editing && <div>
             <label
               htmlFor="employee_id"
               style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)' }}
@@ -128,7 +165,14 @@ const SalaryForm: React.FC = () => {
                 </option>
               ))}
             </select>
-          </div>
+          </div>}
+          {editing && (
+            <p style={{ color: 'var(--color-text-secondary)' }}>
+              Employee: {employees.find((employee) => employee.id === Number(formData.employee_id))
+                ? `${employees.find((employee) => employee.id === Number(formData.employee_id))?.first_name} ${employees.find((employee) => employee.id === Number(formData.employee_id))?.last_name}`
+                : `#${formData.employee_id}`}
+            </p>
+          )}
 
           <div style={{ marginTop: '1rem' }}>
             <label
@@ -243,9 +287,9 @@ const SalaryForm: React.FC = () => {
               {loading ? (
                 <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span className="loader" style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }}></span>
-                Creating...
+                {editing ? 'Saving...' : 'Creating...'}
                 </span>
-              ) : 'Create Salary'}
+              ) : editing ? 'Save Changes' : 'Create Salary'}
             </button>
             <button
               type="button"

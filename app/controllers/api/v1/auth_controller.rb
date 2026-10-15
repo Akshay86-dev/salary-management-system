@@ -12,13 +12,8 @@ class Api::V1::AuthController < Api::V1::BaseController
     render json: {
       data: {
         id: current_user.id,
-        type: 'user',
-        attributes: {
-          email: current_user.email,
-          first_name: current_user.first_name,
-          last_name: current_user.last_name,
-          full_name: "#{current_user.first_name} #{current_user.last_name}"
-        }
+        type: "user",
+        attributes: user_profile_attributes(current_user)
       }
     }
   end

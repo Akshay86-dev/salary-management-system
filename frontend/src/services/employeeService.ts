@@ -6,8 +6,10 @@ export interface Employee {
   first_name: string;
   last_name: string;
   email: string;
+  employee_id?: string;
   job_title: string;
   department_id?: number;
+  location_id?: number;
   department?: {
     id: number;
     name: string;
@@ -31,12 +33,16 @@ interface JsonApiEmployee {
     employee_id?: string;
     is_active?: boolean;
     department_id?: number;
+    location_id?: number;
     department_name?: string | null;
     salary?: number | string | null;
     full_name?: string;
   };
   relationships?: {
     department?: {
+      data?: { id: number | string } | null;
+    };
+    location?: {
       data?: { id: number | string } | null;
     };
   };
@@ -48,6 +54,7 @@ export const normalizeEmployee = (record: Employee | JsonApiEmployee): Employee 
   }
 
   const departmentId = record.relationships?.department?.data?.id;
+  const locationId = record.relationships?.location?.data?.id;
   const departmentName = record.attributes.department_name;
   const salary = record.attributes.salary;
 
@@ -55,6 +62,7 @@ export const normalizeEmployee = (record: Employee | JsonApiEmployee): Employee 
     ...record.attributes,
     id: Number(record.id),
     department_id: departmentId === undefined ? record.attributes.department_id : Number(departmentId),
+    location_id: locationId === undefined ? record.attributes.location_id : Number(locationId),
     department: departmentName && departmentId !== undefined
       ? { id: Number(departmentId), name: departmentName }
       : undefined,
@@ -84,13 +92,13 @@ export const employeeService = {
 
   // Create a new employee
   create: async (employeeData: Partial<Employee>) => {
-    const response = await apiClient.post('/employees', employeeData);
+    const response = await apiClient.post('/employees', { data: { attributes: employeeData } });
     return response.data;
   },
 
   // Update an existing employee
   update: async (id: number, employeeData: Partial<Employee>) => {
-    const response = await apiClient.put(`/employees/${id}`, employeeData);
+    const response = await apiClient.put(`/employees/${id}`, { data: { attributes: employeeData } });
     return response.data;
   },
 

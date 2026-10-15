@@ -47,7 +47,7 @@ class Api::V1::DepartmentsController < Api::V1::BaseController
     department = Department.find(params[:id])
     department.destroy!
 
-    render json: null, status: :no_content
+    head :no_content
   end
 
   private

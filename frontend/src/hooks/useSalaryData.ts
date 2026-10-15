@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import salaryService, { Salary } from '../services/salaryService';
+import salaryService, { normalizeSalary, Salary } from '../services/salaryService';
 import employeeService, { Employee, normalizeEmployee } from '../services/employeeService';
 
 // Custom hook for fetching all salaries for an employee
@@ -15,7 +15,7 @@ export const useSalaries = (employeeId: number) => {
     setError(null);
     try {
       const data = await salaryService.getAllForEmployee(employeeId);
-      setSalaries(data.data || data.salaries || []);
+      setSalaries((data.data || data.salaries || []).map(normalizeSalary));
     } catch (err: any) {
       setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch salaries');
     } finally {
@@ -48,7 +48,8 @@ export const useSalary = (id: number) => {
     setError(null);
     try {
       const data = await salaryService.getById(id);
-      setSalary(data.data || data.salary || null);
+      const result = data.data || data.salary || null;
+      setSalary(result ? normalizeSalary(result) : null);
     } catch (err: any) {
       setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch salary');
     } finally {

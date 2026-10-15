@@ -1,12 +1,16 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEmployee, useEmployeeMutation } from '../../hooks/useEmployeeData';
+import { useSalaries, useSalaryMutation } from '../../hooks/useSalaryData';
 
 const EmployeeDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const employeeId = id ? parseInt(id, 10) : 0;
   const { employee, loading, error, refetch } = useEmployee(employeeId);
   const { deleteEmployee } = useEmployeeMutation();
+  const { salaries, loading: salariesLoading, error: salariesError, refetch: refetchSalaries } = useSalaries(employeeId);
+  const { deleteSalary, loading: salaryMutationLoading, error: salaryMutationError } = useSalaryMutation();
+  const [deletingSalaryId, setDeletingSalaryId] = React.useState<number | null>(null);
   const navigate = useNavigate();
 
   const handleDelete = async () => {
@@ -26,6 +30,27 @@ const EmployeeDetail: React.FC = () => {
 
   const handleAddSalary = () => {
     navigate(`/employees/${employeeId}/salary/new`);
+  };
+
+  const handleEditSalary = (salaryId: number) => {
+    navigate(`/employees/${employeeId}/salary/${salaryId}/edit`);
+  };
+
+  const handleDeleteSalary = async (salaryId: number) => {
+    if (!window.confirm('Are you sure you want to delete this salary record?')) {
+      return;
+    }
+
+    setDeletingSalaryId(salaryId);
+    try {
+      await deleteSalary(salaryId);
+      await refetchSalaries();
+      await refetch();
+    } catch {
+      // The mutation hook exposes the error for display.
+    } finally {
+      setDeletingSalaryId(null);
+    }
   };
 
   if (loading) {
@@ -143,6 +168,71 @@ const EmployeeDetail: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <section className="card" style={{ marginTop: '1rem' }}>
+        <div className="flex" style={{ marginBottom: '1rem' }}>
+          <h2 style={{ color: 'var(--color-text-primary)' }}>Salary History</h2>
+        </div>
+
+        {(salariesError || salaryMutationError) && (
+          <p role="alert" style={{ color: 'var(--color-error)', marginBottom: '1rem' }}>
+            {salariesError || salaryMutationError}
+          </p>
+        )}
+
+        {salariesLoading ? (
+          <div className="flex-center" style={{ padding: '1rem' }}>
+            <span className="loader" aria-label="Loading salary history" />
+          </div>
+        ) : salaries.length === 0 ? (
+          <p style={{ color: 'var(--color-text-secondary)' }}>No salary records found.</p>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Effective Date</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...salaries]
+                  .sort((a, b) => a.effective_date.localeCompare(b.effective_date) || a.id - b.id)
+                  .map((salary) => (
+                    <tr key={salary.id}>
+                      <td>{salary.effective_date}</td>
+                      <td>{['Base', 'Bonus', 'Commission', 'Equity'][salary.salary_type] || 'Other'}</td>
+                      <td>{salary.currency} {salary.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td>{salary.is_current ? 'Current' : 'Previous'}</td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button
+                            className="btn btn-secondary"
+                            onClick={() => handleEditSalary(salary.id)}
+                            aria-label={`Edit ${salary.effective_date} salary`}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-danger"
+                            onClick={() => handleDeleteSalary(salary.id)}
+                            disabled={salaryMutationLoading}
+                            aria-label={`Delete ${salary.effective_date} salary`}
+                          >
+                            {deletingSalaryId === salary.id ? 'Deleting…' : 'Delete'}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 };

@@ -6,12 +6,7 @@ class Api::V1::SalariesController < Api::V1::BaseController
   # GET /api/v1/salaries
   # List all salaries with optional filtering
   def index
-    salaries = Salary.includes(:employee)
-    salaries = salaries.by_employee(params[:employee_id]) if params[:employee_id].present?
-    salaries = salaries.active_salaries if params[:active] == 'true'
-    salaries = salaries.ordered
-
-    render json: SalarySerializer.new(salaries, is_collection: true)
+    render json: SalarySerializer.new(filtered_salaries, is_collection: true)
   end
 
   # GET /api/v1/salaries/:id
@@ -51,7 +46,7 @@ class Api::V1::SalariesController < Api::V1::BaseController
     salary = Salary.find(params[:id])
     salary.destroy!
 
-    render json: null, status: :no_content
+    head :no_content
   end
 
   private
@@ -62,5 +57,12 @@ class Api::V1::SalariesController < Api::V1::BaseController
       :employee_id, :amount, :currency, :salary_type,
       :effective_date, :is_current
     )
+  end
+
+  def filtered_salaries
+    salaries = Salary.includes(:employee)
+    salaries = salaries.by_employee(params[:employee_id]) if params[:employee_id].present?
+    salaries = salaries.active_salaries if params[:active] == "true"
+    salaries.ordered
   end
 end

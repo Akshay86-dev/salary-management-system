@@ -17,6 +17,19 @@ export interface Location {
   updated_at: string;
 }
 
+interface JsonApiLocation {
+  id: number | string;
+  attributes: Omit<Location, 'id'>;
+}
+
+export const normalizeLocation = (record: Location | JsonApiLocation): Location => {
+  if (!('attributes' in record)) {
+    return record;
+  }
+
+  return { ...record.attributes, id: Number(record.id) };
+};
+
 // Location service
 export const locationService = {
   // Fetch all locations

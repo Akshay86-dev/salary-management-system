@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEmployee, useEmployeeMutation, useDepartments } from '../../hooks/useEmployeeData';
+import { useLocations } from '../../hooks/useLocationData';
 
 const EmployeeForm: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
@@ -10,6 +11,7 @@ const EmployeeForm: React.FC = () => {
   
   const { employee: existingEmployee, loading: loadingEmployee } = useEmployee(employeeId || 0);
   const { departments, loading: loadingDepartments } = useDepartments();
+  const { locations, loading: loadingLocations, error: locationsError } = useLocations();
   const { createEmployee, updateEmployee, loading, error: mutationError } = useEmployeeMutation();
 
   const [formData, setFormData] = useState({
@@ -18,9 +20,11 @@ const EmployeeForm: React.FC = () => {
     email: '',
     job_title: '',
     department_id: '',
+    location_id: '',
     hire_date: '',
     salary: '',
   });
+  const [selectedCountry, setSelectedCountry] = useState('');
   const [formError, setFormError] = useState('');
 
   // Populate form if editing
@@ -32,11 +36,19 @@ const EmployeeForm: React.FC = () => {
         email: existingEmployee.email || '',
         job_title: existingEmployee.job_title || '',
         department_id: existingEmployee.department_id?.toString() || '',
+        location_id: existingEmployee.location_id?.toString() || '',
         hire_date: existingEmployee.hire_date ? existingEmployee.hire_date.split('T')[0] : '',
         salary: existingEmployee.salary?.toString() || '',
       });
+      const employeeLocation = locations.find((location) => location.id === existingEmployee.location_id);
+      if (employeeLocation) {
+        setSelectedCountry(employeeLocation.country);
+      }
     }
-  }, [isEditMode, existingEmployee]);
+  }, [isEditMode, existingEmployee, locations]);
+
+  const countries = [...new Set(locations.map((location) => location.country))].sort();
+  const filteredLocations = locations.filter((location) => location.country === selectedCountry);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -53,9 +65,10 @@ const EmployeeForm: React.FC = () => {
     try {
       const employeeData = {
         ...formData,
-        department_id: formData.department_id ? parseInt(formData.department_id, 10) : null,
-        hire_date: formData.hire_date || null,
-        salary: formData.salary ? parseFloat(formData.salary) : null,
+        department_id: formData.department_id ? parseInt(formData.department_id, 10) : undefined,
+        location_id: formData.location_id ? parseInt(formData.location_id, 10) : undefined,
+        hire_date: formData.hire_date || undefined,
+        salary: formData.salary ? parseFloat(formData.salary) : undefined,
       };
 
       if (isEditMode && employeeId) {
@@ -106,6 +119,11 @@ const EmployeeForm: React.FC = () => {
             {formError || mutationError}
           </div>
         )}
+        {locationsError && (
+          <div role="alert" style={{ color: 'var(--color-error)', marginBottom: '1rem' }}>
+            {locationsError}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -149,6 +167,32 @@ const EmployeeForm: React.FC = () => {
           </div>
 
           <div style={{ marginTop: '1rem' }}>
+            <label
+              htmlFor="country"
+              style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)' }}
+            >
+              Country
+            </label>
+            <select
+              id="country"
+              name="country"
+              value={selectedCountry}
+              onChange={(event) => {
+                setSelectedCountry(event.target.value);
+                setFormData((previous) => ({ ...previous, location_id: '' }));
+              }}
+              className="input"
+              disabled={loadingLocations}
+              required
+            >
+              <option value="">Select a country</option>
+              {countries.map((country) => (
+                <option key={country} value={country}>{country}</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ marginTop: '1rem' }}>
             <label 
               htmlFor="email" 
               style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)' }}
@@ -182,6 +226,7 @@ const EmployeeForm: React.FC = () => {
               onChange={handleChange}
               className="input"
               placeholder="Enter job title"
+              required
             />
           </div>
 
@@ -199,12 +244,36 @@ const EmployeeForm: React.FC = () => {
               onChange={handleChange}
               className="input"
               disabled={loadingDepartments}
+              required
             >
               <option value="">Select a department</option>
               {departments.map((dept: any) => (
                 <option key={dept.id} value={dept.id}>
                   {dept.name}
                 </option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ marginTop: '1rem' }}>
+            <label
+              htmlFor="location_id"
+              style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)' }}
+            >
+              Location
+            </label>
+            <select
+              id="location_id"
+              name="location_id"
+              value={formData.location_id}
+              onChange={handleChange}
+              className="input"
+              disabled={loadingLocations || !selectedCountry}
+              required
+            >
+              <option value="">Select a location</option>
+              {filteredLocations.map((location) => (
+                <option key={location.id} value={location.id}>{location.name}</option>
               ))}
             </select>
           </div>
@@ -223,6 +292,7 @@ const EmployeeForm: React.FC = () => {
               value={formData.hire_date}
               onChange={handleChange}
               className="input"
+              required
             />
           </div>
 

@@ -7,7 +7,7 @@ class Salary < ApplicationRecord
   has_paper_trail
 
   # Associations
-  belongs_to :employee
+  belongs_to :employee, class_name: "User", foreign_key: :employee_id
 
   # Validations
   validates :amount, :currency, :effective_date, :salary_type, presence: true

@@ -14,16 +14,16 @@ Build a Salary Management System for 10,000 employees across multiple countries 
     - `first_name: string` (required)
    - `last_name: string` (required)
 
-2. **Employee Model Fields**:
-    - `first_name: string` (required)
-   - `last_name: string` (required)
-   - `email: string` (required, unique)
-   - `employee_id: string` (required, unique format: "EMP-XXXXX")
-   - `job_title: string` (required)
-   - `hire_date: date` (required)
+2. **Employee profile fields on User**:
+   - `role: string` (enum: `EMPLOYEE`, `HUMAN_RESOURCE`; defaults to `EMPLOYEE`)
+   - `employee_id: string` (unique when present; format: "EMP-XXXXX")
+   - `job_title: string`
+   - `hire_date: date`
    - `department_id: integer` (foreign key)
    - `location_id: integer` (foreign key)
    - `is_active: boolean` (default: true)
+   - Employee profiles are identified by a non-null `employee_id`; HR accounts
+     may omit employee profile fields. Only HR-role users may authenticate.
 
 3. **Salary Model Fields**:
    - `employee_id: integer` (foreign key)
@@ -58,9 +58,7 @@ Build a Salary Management System for 10,000 employees across multiple countries 
 
 4. **`app/models/user.rb`** - User model with Devise authentication
 
-5. **`app/models/employee.rb`** - Employee model
-
-6. **`app/models/salary.rb`** - Salary model
+5. **`app/models/salary.rb`** - Salary model
 
 7. **`app/models/department.rb`** - Department model
 
@@ -82,7 +80,8 @@ Build a Salary Management System for 10,000 employees across multiple countries 
 
 16. **Database migrations** (in `db/migrate/`):
    - `devise_create_users.rb`
-   - `create_employees.rb`
+   - `create_employees.rb` (historical; employee data is migrated to users)
+   - `move_employee_data_to_users.rb`
    - `create_salaries.rb`
    - `create_departments.rb`
    - `create_locations.rb`
@@ -181,22 +180,17 @@ Build a Salary Management System for 10,000 employees across multiple countries 
 
 1. **`User < ApplicationRecord`**
    - File: `app/models/user.rb`
-    - Includes: standard Devise modules only (no JWT)
-    - Devise modules: `:database_authenticatable`, `:registerable`, `:recoverable`, `:rememberable`, `:validatable`, `:timeoutable`, `:trackable`
-   - Key methods: standard Devise methods, plus any custom validation methods
-
-2. **`Employee < ApplicationRecord`**
-   - File: `app/models/employee.rb`
-   - Relationships: `belongs_to :department`, `belongs_to :location`, `has_many :salaries`
-   - Key methods:
+   - Includes Devise JWT authentication and the `EMPLOYEE` / `HUMAN_RESOURCE` role enum
+   - Stores employee profile fields as well as authentication fields
+   - HR roles authenticate; employee roles do not
+   - Key profile methods:
     - `full_name` - Returns first_name + last_name
     - `current_salary` - Returns the salary with `is_current: true`
-    - `full_employee_id` - Returns formatted employee_id
-   - Scopes: `active`, `by_department`, `by_location`, `search`
+   - Scopes: `employee_records`, `active`, `inactive`, `search`
 
 4. **`Salary < ApplicationRecord`**
    - File: `app/models/salary.rb`
-   - Relationships: `belongs_to :employee`
+   - Relationships: `belongs_to :employee`, backed by a `User` association
    - Enums: `salary_type` (base, bonus, commission, equity)
    - Key methods:
     - `formatted_amount` - Returns amount with currency symbol
@@ -237,7 +231,8 @@ Build a Salary Management System for 10,000 employees across multiple countries 
 
 ### Removed Classes
 
-None planned. Existing stub classes (ApplicationMailer, ApplicationJob) will remain unused but not removed.
+`Employee < ApplicationRecord` and the `employees` table were removed after
+their profile fields and relationships were migrated to `users`.
 
 ## Dependencies
 
@@ -273,11 +268,8 @@ None planned. Existing stub classes (ApplicationMailer, ApplicationJob) will rem
     - Test user creation and authentication
    - Test Devise session creation
 
-2. **`test/models/employee_test.rb`**
-   - Test validations (required fields, unique employee_id, unique email)
-   - Test associations (department, location, salaries)
-   - Test custom methods (full_name, current_salary, full_employee_id)
-   - Test scopes (active, by_department, search)
+2. Employee profile validations, associations, scopes, and behavior are tested
+   through `test/models/user_test.rb` and `test/models/salary_test.rb`.
 
 4. **`test/models/salary_test.rb`**
    - Test validations (amount, currency, salary_type, effective_date)

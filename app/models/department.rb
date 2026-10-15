@@ -7,8 +7,9 @@ class Department < ApplicationRecord
   has_paper_trail
 
   # Associations
-  has_many :employees, dependent: :nullify
-  belongs_to :manager, class_name: 'Employee', optional: true, foreign_key: 'manager_id'
+  has_many :employees, -> { where.not(employee_id: nil) }, class_name: "User",
+                      dependent: :nullify
+  belongs_to :manager, class_name: "User", optional: true, foreign_key: :manager_id
 
   # Note: budget calculation would go through salaries of active employees
   # has_many :salaries, through: :employees

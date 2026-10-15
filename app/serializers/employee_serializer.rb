@@ -5,6 +5,8 @@
 class EmployeeSerializer
   include JSONAPI::Serializer
 
+  set_type :employee
+
   attributes :first_name, :last_name, :email, :employee_id, :job_title, :hire_date, :is_active
 
   attribute :full_name do |employee|

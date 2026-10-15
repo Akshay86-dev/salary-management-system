@@ -11,6 +11,18 @@ class ApplicationController < ActionController::API
 
   # PaperTrail callback - set the whodunnit (who made the change)
   def paper_trail_whodunnit
-    current_user&.email || 'anonymous'
+    current_user&.email || "anonymous"
+  end
+
+  private
+
+  def user_profile_attributes(user)
+    {
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      full_name: user.full_name,
+      role: user.role.upcase
+    }
   end
 end

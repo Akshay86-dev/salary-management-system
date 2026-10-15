@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import locationService, { Location } from '../services/locationService';
+import locationService, { Location, normalizeLocation } from '../services/locationService';
 
 // Custom hook for fetching all locations
 export const useLocations = () => {
@@ -12,7 +12,7 @@ export const useLocations = () => {
     setError(null);
     try {
       const data = await locationService.getAll();
-      setLocations(data.data || data.locations || []);
+      setLocations((data.data || data.locations || []).map(normalizeLocation));
     } catch (err: any) {
       setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch locations');
     } finally {
@@ -45,7 +45,8 @@ export const useLocation = (id: number) => {
     setError(null);
     try {
       const data = await locationService.getById(id);
-      setLocation(data.data || data.location || null);
+      const result = data.data || data.location || null;
+      setLocation(result ? normalizeLocation(result) : null);
     } catch (err: any) {
       setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch location');
     } finally {

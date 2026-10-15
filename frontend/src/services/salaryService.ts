@@ -19,11 +19,43 @@ export interface Salary {
   updated_at: string;
 }
 
+interface JsonApiSalary {
+  id: number | string;
+  attributes: Omit<Salary, 'id' | 'employee_id' | 'employee' | 'created_at' | 'updated_at'> & {
+    employee_id?: number | string;
+    created_at?: string;
+    updated_at?: string;
+  };
+  relationships?: {
+    employee?: {
+      data?: { id: number | string } | null;
+    };
+  };
+}
+
+export const normalizeSalary = (record: Salary | JsonApiSalary): Salary => {
+  if (!('attributes' in record)) {
+    return record;
+  }
+
+  const employeeId = record.relationships?.employee?.data?.id ?? record.attributes.employee_id;
+
+  return {
+    ...record.attributes,
+    id: Number(record.id),
+    employee_id: Number(employeeId),
+    amount: Number(record.attributes.amount),
+    salary_type: Number(record.attributes.salary_type),
+    created_at: record.attributes.created_at || '',
+    updated_at: record.attributes.updated_at || '',
+  };
+};
+
 // Salary service
 export const salaryService = {
   // Fetch all salaries for an employee
   getAllForEmployee: async (employeeId: number) => {
-    const response = await apiClient.get(`/salaries?employee_id=${employeeId}&active=true`);
+    const response = await apiClient.get('/salaries', { params: { employee_id: employeeId } });
     return response.data;
   },
 

@@ -7,7 +7,7 @@ class Location < ApplicationRecord
   has_paper_trail
 
   # Associations
-  has_many :employees
+  has_many :employees, -> { where.not(employee_id: nil) }, class_name: "User"
 
   # Validations
   validates :name, presence: true
@@ -23,7 +23,7 @@ class Location < ApplicationRecord
 
   # Instance methods
   def full_address
-    parts = [address, city, state, zip_code].compact
+ s   parts = [address, city, state, zip_code].compact
     return name if parts.empty?
     parts.join(', ')
   end

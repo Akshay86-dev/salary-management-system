@@ -6,11 +6,10 @@ class Api::V1::ReportsController < Api::V1::BaseController
   # GET /api/v1/reports/salary_totals
   # Total salary amounts by department
   def salary_totals_by_department
-    totals = Salary
-      .joins(employee: :department)
-      .where(is_current: true)
-      .group('departments.name')
+    totals = current_salaries_for_reporting
+      .group("departments.name")
       .sum(:amount)
+    total_all_departments = totals.values.sum
 
     result = totals.map do |dept_name, total|
       {
@@ -23,8 +22,8 @@ class Api::V1::ReportsController < Api::V1::BaseController
     render json: {
       data: result,
       summary: {
-        total_all_departments: totals.values.sum,
-        formatted_total: format_salary(totals.values.sum),
+        total_all_departments: total_all_departments,
+        formatted_total: format_salary(total_all_departments),
         department_count: totals.size
       }
     }
@@ -33,11 +32,10 @@ class Api::V1::ReportsController < Api::V1::BaseController
   # GET /api/v1/reports/average_salary_by_job_title
   # Average salary by job title
   def average_salary_by_job_title
-    averages = Salary
-      .joins(employee: :department)
-      .where(is_current: true)
-      .group('employees.job_title')
+    averages = current_salaries_for_reporting
+      .group("users.job_title")
       .average(:amount)
+    average_all_jobs = averages.values.sum / averages.size.to_f
 
     result = averages.map do |job_title, avg_salary|
       {
@@ -50,8 +48,8 @@ class Api::V1::ReportsController < Api::V1::BaseController
     render json: {
       data: result.sort_by { |d| -d[:average_salary] },
       summary: {
-        average_all_jobs: averages.values.sum / averages.size.to_f,
-        formatted_average: format_currency(averages.values.sum / averages.size.to_f),
+        average_all_jobs: average_all_jobs,
+        formatted_average: format_currency(average_all_jobs),
         job_title_count: averages.size
       }
     }
@@ -112,9 +110,9 @@ class Api::V1::ReportsController < Api::V1::BaseController
   # GET /api/v1/reports/export_salaries
   # Export salary data as CSV
   def export_salaries
-    salaries = Salary.includes(employee: [:department, :location])
+    salaries = Salary.includes(employee: [ :department, :location ])
                      .active_salaries
-                     .order('employees.last_name', 'employees.first_name')
+                     .order("users.last_name", "users.first_name")
 
     csv_data = CSV.generate(headers: true) do |csv|
       csv << %w[Employee ID Name Email Department Job Title Salary Amount Currency Type Effective Date]
@@ -131,22 +129,22 @@ class Api::V1::ReportsController < Api::V1::BaseController
           salary.amount,
           salary.currency,
           Salary::SALARY_TYPES.key(salary.salary_type)&.to_s&.upcase,
-          salary.effective_date.strftime('%Y-%m-%d')
+          salary.effective_date.strftime("%Y-%m-%d")
         ]
       end
     end
 
     send_data csv_data,
               filename: "salary_report_#{Time.current.strftime('%Y%m%d_%H%M%S')}.csv",
-              type: 'text/csv',
-              disposition: 'attachment'
+              type: "text/csv",
+              disposition: "attachment"
   end
 
   # GET /api/v1/reports/export_employees
   # Export employee data as CSV
   def export_employees
-    employees = Employee.includes(:department, :location, :salaries)
-                        .ordered
+    employees = User.employee_records.includes(:department, :location, :salaries)
+                     .ordered
 
     csv_data = CSV.generate(headers: true) do |csv|
       csv << %w[Employee ID Name Email Job Title Hire Date Department Location Status Current Salary]
@@ -158,10 +156,10 @@ class Api::V1::ReportsController < Api::V1::BaseController
           employee.full_name,
           employee.email,
           employee.job_title,
-          employee.hire_date.strftime('%Y-%m-%d'),
+          employee.hire_date.strftime("%Y-%m-%d"),
           employee.department&.name,
           employee.location&.name,
-          employee.is_active ? 'Active' : 'Inactive',
+          employee.is_active ? "Active" : "Inactive",
           current_salary ? "#{current_salary.currency} #{current_salary.amount}" : nil
         ]
       end
@@ -169,24 +167,28 @@ class Api::V1::ReportsController < Api::V1::BaseController
 
     send_data csv_data,
               filename: "employee_report_#{Time.current.strftime('%Y%m%d_%H%M%S')}.csv",
-              type: 'text/csv',
-              disposition: 'attachment'
+              type: "text/csv",
+              disposition: "attachment"
   end
 
   private
 
-  def format_salary(amount, currency = 'USD')
+  def current_salaries_for_reporting
+    Salary.joins(employee: :department).where(is_current: true)
+  end
+
+  def format_salary(amount, currency = "USD")
     "#{currency} #{number_with_delimiter(amount.to_i)}"
   end
 
   def format_currency(amount)
-    return '$0.00' if amount.nil?
+    return "$0.00" if amount.nil?
 
     "$#{number_with_delimiter(number_with_precision(amount, precision: 2))}"
   end
 
   def number_with_delimiter(number)
-    sprintf('%,d', number.to_i)
+    ActiveSupport::NumberHelper.number_to_delimited(number)
   end
 
   def number_with_precision(number, precision: 2)

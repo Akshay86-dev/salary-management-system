@@ -114,6 +114,14 @@
   border-color: var(--color-input-focus);
 }
 
+.pie-chart-slice:focus {
+  outline: none;
+}
+
+.pie-chart-slice:focus-visible {
+  filter: brightness(1.15);
+}
+
 /* Table styles */
 table {
   width: 100%;

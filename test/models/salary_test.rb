@@ -5,7 +5,8 @@ class SalaryTest < ActiveSupport::TestCase
 
   test "creating a current salary replaces the current salary of the same type" do
     suffix = SecureRandom.hex(4)
-    employee = Employee.create!(
+    employee = User.create!(
+      role: :employee,
       first_name: "Salary",
       last_name: "Test",
       email: "salary-#{suffix}@example.com",
@@ -35,5 +36,6 @@ class SalaryTest < ActiveSupport::TestCase
     assert_not previous_salary.reload.is_current
     assert_equal new_salary, employee.reload.current_salary
     assert_equal 60_000.0, EmployeeSerializer.new(employee).serializable_hash.dig(:data, :attributes, :salary)
+    assert_equal employee.id, SalarySerializer.new(new_salary).serializable_hash.dig(:data, :attributes, :employee_id)
   end
 end
