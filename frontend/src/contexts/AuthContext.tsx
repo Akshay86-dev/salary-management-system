@@ -1,15 +1,8 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import authService from '../services/authService';
-
-interface User {
-  id: number;
-  email: string;
-  first_name: string;
-  last_name: string;
-}
+import authService, { AuthUser, AuthProfileResponse } from '../services/authService';
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -17,6 +10,22 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const userFromProfile = (profile: AuthProfileResponse): AuthUser | null => {
+  if (profile.data) {
+    const { id, attributes } = profile.data;
+    if (attributes.email && attributes.first_name && attributes.last_name) {
+      return {
+        id: Number(id),
+        email: attributes.email,
+        first_name: attributes.first_name,
+        last_name: attributes.last_name,
+      };
+    }
+  }
+
+  return profile.user ?? null;
+};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -27,7 +36,7 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   const isAuthenticated = !!user;
@@ -38,17 +47,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         if (authService.isAuthenticated()) {
           const profile = await authService.getProfile();
-          if (profile.data || profile.user) {
-            const profileData = profile.data || profile.user;
-            setUser({
-              id: profileData.id,
-              email: profileData.email,
-              first_name: profileData.first_name,
-              last_name: profileData.last_name,
-            });
-          }
+          setUser(userFromProfile(profile));
         }
-      } catch (error) {
+      } catch {
         localStorage.removeItem('token');
       } finally {
         setLoading(false);
@@ -59,17 +60,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await authService.login(email, password);
-    const profile = await authService.getProfile();
-    if (profile.data || profile.user) {
-      const profileData = profile.data || profile.user;
-      setUser({
-        id: profileData.id,
-        email: profileData.email,
-        first_name: profileData.first_name,
-        last_name: profileData.last_name,
-      });
-    }
+    const { user: authenticatedUser } = await authService.login(email, password);
+    setUser(authenticatedUser);
   };
 
   const logout = async () => {

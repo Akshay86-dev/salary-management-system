@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDepartments, useEmployees, useEmployeeMutation } from '../../hooks/useEmployeeData';
 import { locationService } from '../../services/locationService';
+import { errorMessage } from '../../services/errorMessage';
 import { usePagination } from '../../hooks/usePagination';
 import Pagination from '../common/Pagination';
 
@@ -33,12 +34,12 @@ const EmployeeList: React.FC = () => {
     const fetchCountries = async () => {
       try {
         const response = await locationService.getAll();
-        const values = (response.data || [])
-          .map((location: { attributes?: { country?: string } }) => location.attributes?.country)
-          .filter((value: string | undefined): value is string => Boolean(value));
+        const values = response.data
+          .map((location) => location.attributes.country)
+          .filter((value): value is string => Boolean(value));
         setCountries([...new Set(values)].sort());
-      } catch (err: any) {
-        setCountryError(err.response?.data?.error || err.message || 'Failed to load country filters');
+      } catch (err) {
+        setCountryError(errorMessage(err, 'Failed to load country filters'));
       }
     };
 
@@ -179,7 +180,7 @@ const EmployeeList: React.FC = () => {
                 </td>
               </tr>
             ) : (
-              pagination.items.map((employee: any) => (
+              pagination.items.map((employee) => (
                 <tr key={employee.id}>
                   <td>{employee.id}</td>
                   <td>{employee.first_name} {employee.last_name}</td>

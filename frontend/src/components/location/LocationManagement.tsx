@@ -69,7 +69,7 @@ const LocationManagement: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const locationData: any = {
+      const locationData: Partial<Location> = {
         name: formData.name,
         address: formData.address || null,
         city: formData.city || null,
@@ -182,7 +182,7 @@ const LocationManagement: React.FC = () => {
             <tr><th>ID</th><th>Name</th><th>City</th><th>State</th><th>Country</th><th>Actions</th></tr>
           </thead>
           <tbody>
-            {pagination.items.map((loc: any) => (
+            {pagination.items.map((loc) => (
               <tr key={loc.id}>
                 <td>{loc.id}</td>
                 <td>{loc.name}</td>

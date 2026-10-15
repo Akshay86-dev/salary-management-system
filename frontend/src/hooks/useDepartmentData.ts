@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import departmentService, { Department, normalizeDepartment } from '../services/departmentService';
+import { errorMessage } from '../services/errorMessage';
 
 // Custom hook for fetching all departments
 export const useDepartments = () => {
@@ -12,9 +13,9 @@ export const useDepartments = () => {
     setError(null);
     try {
       const data = await departmentService.getAll();
-      setDepartments((data.data || data.departments || []).map(normalizeDepartment));
-    } catch (err: any) {
-      setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch departments');
+      setDepartments(data.data.map(normalizeDepartment));
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to fetch departments'));
     } finally {
       setLoading(false);
     }
@@ -45,10 +46,10 @@ export const useDepartment = (id: number) => {
     setError(null);
     try {
       const data = await departmentService.getById(id);
-      const result = data.data || data.department || null;
+      const result = data.data || null;
       setDepartment(result ? normalizeDepartment(result) : null);
-    } catch (err: any) {
-      setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch department');
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to fetch department'));
     } finally {
       setLoading(false);
     }
@@ -77,8 +78,8 @@ export const useDepartmentMutation = () => {
     try {
       const result = await departmentService.create(data);
       return result;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.errors?.[0] || err.message || 'Failed to create department';
+    } catch (err) {
+      const errorMsg = errorMessage(err, 'Failed to create department');
       setError(errorMsg);
       throw err;
     } finally {
@@ -92,8 +93,8 @@ export const useDepartmentMutation = () => {
     try {
       const result = await departmentService.update(id, data);
       return result;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.errors?.[0] || err.message || 'Failed to update department';
+    } catch (err) {
+      const errorMsg = errorMessage(err, 'Failed to update department');
       setError(errorMsg);
       throw err;
     } finally {
@@ -107,8 +108,8 @@ export const useDepartmentMutation = () => {
     try {
       const result = await departmentService.delete(id);
       return result;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.errors?.[0] || err.message || 'Failed to delete department';
+    } catch (err) {
+      const errorMsg = errorMessage(err, 'Failed to delete department');
       setError(errorMsg);
       throw err;
     } finally {

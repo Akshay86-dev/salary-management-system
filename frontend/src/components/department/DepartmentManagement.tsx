@@ -55,7 +55,7 @@ const DepartmentManagement: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const deptData: any = {
+    const deptData: Partial<Department> = {
       name: formData.name,
     };
 
@@ -144,7 +144,7 @@ const DepartmentManagement: React.FC = () => {
             <tr><th>ID</th><th>Name</th><th>Budget</th><th>Manager ID</th><th>Actions</th></tr>
           </thead>
           <tbody>
-            {pagination.items.map((dept: any) => (
+            {pagination.items.map((dept) => (
               <tr key={dept.id}>
                 <td>{dept.id}</td>
                 <td>{dept.name}</td>

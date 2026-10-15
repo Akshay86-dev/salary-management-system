@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSalary, useSalaryMutation, useEmployeeOptions } from '../../hooks/useSalaryData';
 import { Salary } from '../../services/salaryService';
+import { errorMessage } from '../../services/errorMessage';
 
 const SALARY_TYPES = [
   { value: 0, label: 'Base' },
@@ -91,8 +92,8 @@ const SalaryForm: React.FC = () => {
       }
 
       navigate(`/employees/${employeeIdParam}`);
-    } catch (err: any) {
-      setFormError(err.response?.data?.errors?.[0] || err.message || 'Failed to save salary');
+    } catch (err) {
+      setFormError(errorMessage(err, 'Failed to save salary'));
     }
   };
 

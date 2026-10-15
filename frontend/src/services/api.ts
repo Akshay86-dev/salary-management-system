@@ -1,12 +1,12 @@
 import axios, { AxiosInstance } from 'axios';
+import type { Department } from './departmentService';
+import type { Employee } from './employeeService';
 
 // Create axios instance with base configuration
 // In development, Vite dev server proxies API requests to Rails on port 3000
 // In production, Rails serves the React frontend from the same origin
 const apiClient: AxiosInstance = axios.create({
   baseURL: '/api/v1',
-  // Important: credentials must be 'include' for cookie-based JWT auth
-  credentials: 'include',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -78,12 +78,12 @@ export const departmentsAPI = {
     const response = await apiClient.get(`/departments/${id}`);
     return response.data;
   },
-  create: async (data: any) => {
-    const response = await apiClient.post('/departments', data);
+  create: async (data: Partial<Department>) => {
+    const response = await apiClient.post('/departments', { data: { attributes: data } });
     return response.data;
   },
-  update: async (id: number, data: any) => {
-    const response = await apiClient.put(`/departments/${id}`, data);
+  update: async (id: number, data: Partial<Department>) => {
+    const response = await apiClient.put(`/departments/${id}`, { data: { attributes: data } });
     return response.data;
   },
   delete: async (id: number) => {
@@ -102,12 +102,12 @@ export const employeesAPI = {
     const response = await apiClient.get(`/employees/${id}`);
     return response.data;
   },
-  create: async (data: any) => {
-    const response = await apiClient.post('/employees', data);
+  create: async (data: Partial<Employee>) => {
+    const response = await apiClient.post('/employees', { data: { attributes: data } });
     return response.data;
   },
-  update: async (id: number, data: any) => {
-    const response = await apiClient.put(`/employees/${id}`, data);
+  update: async (id: number, data: Partial<Employee>) => {
+    const response = await apiClient.put(`/employees/${id}`, { data: { attributes: data } });
     return response.data;
   },
   delete: async (id: number) => {

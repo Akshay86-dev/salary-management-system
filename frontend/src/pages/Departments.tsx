@@ -1,25 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { departmentsAPI } from '../services/api';
+import React from 'react';
+import { useDepartments } from '../hooks/useDepartmentData';
 
 const Departments: React.FC = () => {
-  const [departments, setDepartments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const response = await departmentsAPI.getAll();
-        setDepartments(response.data || []);
-      } catch (err) {
-        setError('Failed to load departments');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDepartments();
-  }, []);
+  const { departments, loading, error } = useDepartments();
 
   if (loading) {
     return (
@@ -49,15 +32,17 @@ const Departments: React.FC = () => {
             <tr>
               <th>ID</th>
               <th>Name</th>
-              <th>Location</th>
+              <th>Budget</th>
+              <th>Manager ID</th>
             </tr>
           </thead>
           <tbody>
-            {departments.map((dept: any) => (
+            {departments.map((dept) => (
               <tr key={dept.id}>
                 <td>{dept.id}</td>
                 <td>{dept.name}</td>
-                <td>{dept.location?.name || 'N/A'}</td>
+                <td>{dept.budget?.toLocaleString() || 'N/A'}</td>
+                <td>{dept.manager_id ?? 'N/A'}</td>
               </tr>
             ))}
           </tbody>

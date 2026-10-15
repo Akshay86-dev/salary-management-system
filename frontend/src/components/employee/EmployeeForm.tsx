@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEmployee, useEmployeeMutation, useDepartments } from '../../hooks/useEmployeeData';
 import { useLocations } from '../../hooks/useLocationData';
+import { errorMessage } from '../../services/errorMessage';
 
 const EmployeeForm: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
@@ -78,8 +79,8 @@ const EmployeeForm: React.FC = () => {
       }
       
       navigate('/employees');
-    } catch (err: any) {
-      setFormError(err.response?.data?.errors?.[0] || err.message || 'Failed to save employee');
+    } catch (err) {
+      setFormError(errorMessage(err, 'Failed to save employee'));
     }
   };
 
@@ -247,7 +248,7 @@ const EmployeeForm: React.FC = () => {
               required
             >
               <option value="">Select a department</option>
-              {departments.map((dept: any) => (
+              {departments.map((dept) => (
                 <option key={dept.id} value={dept.id}>
                   {dept.name}
                 </option>

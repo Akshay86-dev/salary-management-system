@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import locationService, { Location, normalizeLocation } from '../services/locationService';
+import { errorMessage } from '../services/errorMessage';
 
 // Custom hook for fetching all locations
 export const useLocations = () => {
@@ -12,9 +13,9 @@ export const useLocations = () => {
     setError(null);
     try {
       const data = await locationService.getAll();
-      setLocations((data.data || data.locations || []).map(normalizeLocation));
-    } catch (err: any) {
-      setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch locations');
+      setLocations(data.data.map(normalizeLocation));
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to fetch locations'));
     } finally {
       setLoading(false);
     }
@@ -45,10 +46,10 @@ export const useLocation = (id: number) => {
     setError(null);
     try {
       const data = await locationService.getById(id);
-      const result = data.data || data.location || null;
+      const result = data.data || null;
       setLocation(result ? normalizeLocation(result) : null);
-    } catch (err: any) {
-      setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch location');
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to fetch location'));
     } finally {
       setLoading(false);
     }
@@ -77,8 +78,8 @@ export const useLocationMutation = () => {
     try {
       const result = await locationService.create(data);
       return result;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.errors?.[0] || err.message || 'Failed to create location';
+    } catch (err) {
+      const errorMsg = errorMessage(err, 'Failed to create location');
       setError(errorMsg);
       throw err;
     } finally {
@@ -92,8 +93,8 @@ export const useLocationMutation = () => {
     try {
       const result = await locationService.update(id, data);
       return result;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.errors?.[0] || err.message || 'Failed to update location';
+    } catch (err) {
+      const errorMsg = errorMessage(err, 'Failed to update location');
       setError(errorMsg);
       throw err;
     } finally {
@@ -107,8 +108,8 @@ export const useLocationMutation = () => {
     try {
       const result = await locationService.delete(id);
       return result;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.errors?.[0] || err.message || 'Failed to delete location';
+    } catch (err) {
+      const errorMsg = errorMessage(err, 'Failed to delete location');
       setError(errorMsg);
       throw err;
     } finally {

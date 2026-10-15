@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
+import { errorMessage } from '../services/errorMessage';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -18,11 +19,8 @@ const Login: React.FC = () => {
     try {
       await login(email, password);
       navigate('/');
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.errors?.[0] || 
-                       err.message || 
-                       'Invalid email or password';
-      setLoginError(errorMsg);
+    } catch (err) {
+      setLoginError(errorMessage(err, 'Invalid email or password'));
     } finally {
       setLoading(false);
     }
@@ -110,7 +108,7 @@ const Login: React.FC = () => {
         </form>
         
         <p style={{ marginTop: '1rem', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>
-          Don't have an account? Contact your administrator.
+          Don&apos;t have an account? Contact your administrator.
         </p>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import dashboardService, { DashboardStats } from '../services/dashboardService';
+import { errorMessage } from '../services/errorMessage';
 
 type Distribution = { name: string; count: number };
 
@@ -251,8 +252,8 @@ const Dashboard: React.FC = () => {
     const fetchStats = async () => {
       try {
         setStats(await dashboardService.getStats());
-      } catch (err: any) {
-        setError(err.response?.data?.error || err.message || 'Failed to load dashboard stats');
+      } catch (err) {
+        setError(errorMessage(err, 'Failed to load dashboard stats'));
       } finally {
         setLoading(false);
       }

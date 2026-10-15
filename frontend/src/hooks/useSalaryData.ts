@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import salaryService, { normalizeSalary, Salary } from '../services/salaryService';
 import employeeService, { Employee, normalizeEmployee } from '../services/employeeService';
+import { errorMessage } from '../services/errorMessage';
 
 // Custom hook for fetching all salaries for an employee
 export const useSalaries = (employeeId: number) => {
@@ -15,9 +16,9 @@ export const useSalaries = (employeeId: number) => {
     setError(null);
     try {
       const data = await salaryService.getAllForEmployee(employeeId);
-      setSalaries((data.data || data.salaries || []).map(normalizeSalary));
-    } catch (err: any) {
-      setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch salaries');
+      setSalaries(data.data.map(normalizeSalary));
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to fetch salaries'));
     } finally {
       setLoading(false);
     }
@@ -48,10 +49,10 @@ export const useSalary = (id: number) => {
     setError(null);
     try {
       const data = await salaryService.getById(id);
-      const result = data.data || data.salary || null;
+      const result = data.data || null;
       setSalary(result ? normalizeSalary(result) : null);
-    } catch (err: any) {
-      setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch salary');
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to fetch salary'));
     } finally {
       setLoading(false);
     }
@@ -70,30 +71,6 @@ export const useSalary = (id: number) => {
 };
 
 // Custom hook for salary mutations
-const getErrorMessage = (err: any, fallback: string) => {
-  const backendErrors = err.response?.data?.errors;
-
-  if (Array.isArray(backendErrors)) {
-    return backendErrors[0] || fallback;
-  }
-
-  if (typeof backendErrors === 'string') {
-    return backendErrors;
-  }
-
-  if (backendErrors && typeof backendErrors === 'object') {
-    const firstValue = Object.values(backendErrors)
-      .flatMap((value: any) => Array.isArray(value) ? value : [value])
-      .find((value) => value !== undefined && value !== null && value !== '');
-
-    if (firstValue) {
-      return String(firstValue);
-    }
-  }
-
-  return err.response?.data?.error || err.message || fallback;
-};
-
 export const useSalaryMutation = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -104,8 +81,8 @@ export const useSalaryMutation = () => {
     try {
       const result = await salaryService.create(data);
       return result;
-    } catch (err: any) {
-      const errorMsg = getErrorMessage(err, 'Failed to create salary');
+    } catch (err) {
+      const errorMsg = errorMessage(err, 'Failed to create salary');
       setError(errorMsg);
       throw err;
     } finally {
@@ -119,8 +96,8 @@ export const useSalaryMutation = () => {
     try {
       const result = await salaryService.update(id, data);
       return result;
-    } catch (err: any) {
-      const errorMsg = getErrorMessage(err, 'Failed to update salary');
+    } catch (err) {
+      const errorMsg = errorMessage(err, 'Failed to update salary');
       setError(errorMsg);
       throw err;
     } finally {
@@ -134,8 +111,8 @@ export const useSalaryMutation = () => {
     try {
       const result = await salaryService.delete(id);
       return result;
-    } catch (err: any) {
-      const errorMsg = getErrorMessage(err, 'Failed to delete salary');
+    } catch (err) {
+      const errorMsg = errorMessage(err, 'Failed to delete salary');
       setError(errorMsg);
       throw err;
     } finally {
@@ -164,9 +141,9 @@ export const useEmployeeOptions = () => {
       setError(null);
       try {
         const data = await employeeService.getAll();
-        setEmployees((data.data || data.employees || []).map(normalizeEmployee));
-      } catch (err: any) {
-        setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch employees');
+        setEmployees(data.data.map(normalizeEmployee));
+      } catch (err) {
+        setError(errorMessage(err, 'Failed to fetch employees'));
       } finally {
         setLoading(false);
       }

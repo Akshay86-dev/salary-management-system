@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import employeeService, { Employee, EmployeeFilters, normalizeEmployee } from '../services/employeeService';
-import { normalizeDepartment } from '../services/departmentService';
+import { Department, normalizeDepartment } from '../services/departmentService';
+import { errorMessage } from '../services/errorMessage';
 
 // Custom hook for fetching all employees
 export const useEmployees = (filters: EmployeeFilters = {}) => {
@@ -13,9 +14,9 @@ export const useEmployees = (filters: EmployeeFilters = {}) => {
     setError(null);
     try {
       const data = await employeeService.getAll(filters);
-      setEmployees((data.data || data.employees || []).map(normalizeEmployee));
-    } catch (err: any) {
-      setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch employees');
+      setEmployees(data.data.map(normalizeEmployee));
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to fetch employees'));
     } finally {
       setLoading(false);
     }
@@ -50,10 +51,10 @@ export const useEmployee = (id: number) => {
     setError(null);
     try {
       const data = await employeeService.getById(id);
-      const result = data.data || data.employee || null;
+      const result = data.data || null;
       setEmployee(result ? normalizeEmployee(result) : null);
-    } catch (err: any) {
-      setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch employee');
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to fetch employee'));
     } finally {
       setLoading(false);
     }
@@ -77,7 +78,7 @@ export const useEmployee = (id: number) => {
 
 // Custom hook for fetching departments
 export const useDepartments = () => {
-  const [departments, setDepartments] = useState([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -87,9 +88,9 @@ export const useDepartments = () => {
       setError(null);
       try {
         const data = await employeeService.getAllDepartments();
-        setDepartments((data.data || data.departments || []).map(normalizeDepartment));
-      } catch (err: any) {
-        setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch departments');
+        setDepartments(data.data.map(normalizeDepartment));
+      } catch (err) {
+        setError(errorMessage(err, 'Failed to fetch departments'));
       } finally {
         setLoading(false);
       }
@@ -116,8 +117,8 @@ export const useEmployeeMutation = () => {
     try {
       const result = await employeeService.create(data);
       return result;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.errors?.[0] || err.message || 'Failed to create employee';
+    } catch (err) {
+      const errorMsg = errorMessage(err, 'Failed to create employee');
       setError(errorMsg);
       throw err;
     } finally {
@@ -131,8 +132,8 @@ export const useEmployeeMutation = () => {
     try {
       const result = await employeeService.update(id, data);
       return result;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.errors?.[0] || err.message || 'Failed to update employee';
+    } catch (err) {
+      const errorMsg = errorMessage(err, 'Failed to update employee');
       setError(errorMsg);
       throw err;
     } finally {
@@ -146,8 +147,8 @@ export const useEmployeeMutation = () => {
     try {
       const result = await employeeService.delete(id);
       return result;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.errors?.[0] || err.message || 'Failed to delete employee';
+    } catch (err) {
+      const errorMsg = errorMessage(err, 'Failed to delete employee');
       setError(errorMsg);
       throw err;
     } finally {

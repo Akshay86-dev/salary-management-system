@@ -1,25 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { employeesAPI } from '../services/api';
+import React from 'react';
+import { useEmployees } from '../hooks/useEmployeeData';
 
 const Employees: React.FC = () => {
-  const [employees, setEmployees] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const response = await employeesAPI.getAll();
-        setEmployees(response.data || []);
-      } catch (err) {
-        setError('Failed to load employees');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEmployees();
-  }, []);
+  const { employees, loading, error } = useEmployees({ status: 'all' });
 
   if (loading) {
     return (
@@ -55,7 +38,7 @@ const Employees: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {employees.map((emp: any) => (
+            {employees.map((emp) => (
               <tr key={emp.id}>
                 <td>{emp.id}</td>
                 <td>{emp.first_name} {emp.last_name}</td>

@@ -1,4 +1,5 @@
 import apiClient from './api';
+import { JsonApiCollection, JsonApiRecord } from './apiTypes';
 
 // Location interface
 export interface Location {
@@ -17,7 +18,7 @@ export interface Location {
   updated_at: string;
 }
 
-interface JsonApiLocation {
+export interface JsonApiLocation {
   id: number | string;
   attributes: Omit<Location, 'id'>;
 }
@@ -33,13 +34,13 @@ export const normalizeLocation = (record: Location | JsonApiLocation): Location 
 // Location service
 export const locationService = {
   // Fetch all locations
-  getAll: async () => {
+  getAll: async (): Promise<JsonApiCollection<JsonApiLocation>> => {
     const response = await apiClient.get('/locations');
     return response.data;
   },
 
   // Fetch a single location by ID
-  getById: async (id: number) => {
+  getById: async (id: number): Promise<JsonApiRecord<JsonApiLocation>> => {
     const response = await apiClient.get(`/locations/${id}`);
     return response.data;
   },

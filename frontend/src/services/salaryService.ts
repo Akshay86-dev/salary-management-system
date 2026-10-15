@@ -1,4 +1,5 @@
 import apiClient from './api';
+import { JsonApiCollection, JsonApiRecord } from './apiTypes';
 
 // Salary interface
 export interface Salary {
@@ -19,7 +20,7 @@ export interface Salary {
   updated_at: string;
 }
 
-interface JsonApiSalary {
+export interface JsonApiSalary {
   id: number | string;
   attributes: Omit<Salary, 'id' | 'employee_id' | 'employee' | 'created_at' | 'updated_at'> & {
     employee_id?: number | string;
@@ -54,13 +55,13 @@ export const normalizeSalary = (record: Salary | JsonApiSalary): Salary => {
 // Salary service
 export const salaryService = {
   // Fetch all salaries for an employee
-  getAllForEmployee: async (employeeId: number) => {
+  getAllForEmployee: async (employeeId: number): Promise<JsonApiCollection<JsonApiSalary>> => {
     const response = await apiClient.get('/salaries', { params: { employee_id: employeeId } });
     return response.data;
   },
 
   // Fetch a single salary by ID
-  getById: async (id: number) => {
+  getById: async (id: number): Promise<JsonApiRecord<JsonApiSalary>> => {
     const response = await apiClient.get(`/salaries/${id}`);
     return response.data;
   },

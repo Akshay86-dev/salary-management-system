@@ -1,4 +1,6 @@
 import apiClient from './api';
+import { JsonApiCollection, JsonApiRecord } from './apiTypes';
+import { JsonApiDepartment } from './departmentService';
 
 // Employee interface
 export interface Employee {
@@ -27,7 +29,7 @@ export interface EmployeeFilters {
   status?: 'all' | 'active' | 'inactive';
 }
 
-interface JsonApiEmployee {
+export interface JsonApiEmployee {
   id: number | string;
   attributes: Pick<Employee, 'first_name' | 'last_name' | 'email' | 'job_title' | 'hire_date'> & {
     employee_id?: string;
@@ -73,7 +75,7 @@ export const normalizeEmployee = (record: Employee | JsonApiEmployee): Employee 
 // Employee service
 export const employeeService = {
   // Fetch all employees
-  getAll: async (filters: EmployeeFilters = {}) => {
+  getAll: async (filters: EmployeeFilters = {}): Promise<JsonApiCollection<JsonApiEmployee>> => {
     const params = {
       query: filters.query || undefined,
       country: filters.country || undefined,
@@ -85,7 +87,7 @@ export const employeeService = {
   },
 
   // Fetch a single employee by ID
-  getById: async (id: number) => {
+  getById: async (id: number): Promise<JsonApiRecord<JsonApiEmployee>> => {
     const response = await apiClient.get(`/employees/${id}`);
     return response.data;
   },
@@ -109,7 +111,7 @@ export const employeeService = {
   },
 
   // Fetch all departments for employee form
-  getAllDepartments: async () => {
+  getAllDepartments: async (): Promise<JsonApiCollection<JsonApiDepartment>> => {
     const response = await apiClient.get('/departments');
     return response.data;
   },

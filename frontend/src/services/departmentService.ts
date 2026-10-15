@@ -1,4 +1,5 @@
 import apiClient from './api';
+import { JsonApiCollection, JsonApiRecord } from './apiTypes';
 
 // Department interface
 export interface Department {
@@ -10,7 +11,7 @@ export interface Department {
   updated_at?: string;
 }
 
-interface JsonApiDepartment {
+export interface JsonApiDepartment {
   id: number | string;
   attributes: {
     name: string;
@@ -36,13 +37,13 @@ export const normalizeDepartment = (record: Department | JsonApiDepartment): Dep
 // Department service
 export const departmentService = {
   // Fetch all departments
-  getAll: async () => {
+  getAll: async (): Promise<JsonApiCollection<JsonApiDepartment>> => {
     const response = await apiClient.get('/departments');
     return response.data;
   },
 
   // Fetch a single department by ID
-  getById: async (id: number) => {
+  getById: async (id: number): Promise<JsonApiRecord<JsonApiDepartment>> => {
     const response = await apiClient.get(`/departments/${id}`);
     return response.data;
   },
