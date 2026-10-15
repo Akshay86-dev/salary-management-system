@@ -18,10 +18,14 @@ const EmployeeDetail: React.FC = () => {
         // Error is handled in the hook
       }
     }
-  };
+    };
 
   const handleEdit = () => {
     navigate(`/employees/${employeeId}/edit`);
+  };
+
+  const handleAddSalary = () => {
+    navigate(`/employees/${employeeId}/salary/new`);
   };
 
   if (loading) {
@@ -60,6 +64,12 @@ const EmployeeDetail: React.FC = () => {
             onClick={handleEdit}
           >
             Edit
+          </button>
+          <button 
+            className="btn btn-secondary"
+            onClick={handleAddSalary}
+          >
+            Add Salary
           </button>
           <button 
             className="btn btn-danger"
