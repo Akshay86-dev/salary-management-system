@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import employeeService, { Employee, normalizeEmployee } from '../services/employeeService';
+import employeeService, { Employee, EmployeeFilters, normalizeEmployee } from '../services/employeeService';
 import { normalizeDepartment } from '../services/departmentService';
 
 // Custom hook for fetching all employees
-export const useEmployees = () => {
+export const useEmployees = (filters: EmployeeFilters = {}) => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -12,14 +12,14 @@ export const useEmployees = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await employeeService.getAll();
+      const data = await employeeService.getAll(filters);
       setEmployees((data.data || data.employees || []).map(normalizeEmployee));
     } catch (err: any) {
       setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch employees');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [filters.query, filters.country, filters.departmentId, filters.status]);
 
   const refresh = useCallback(async () => {
     await fetchEmployees();

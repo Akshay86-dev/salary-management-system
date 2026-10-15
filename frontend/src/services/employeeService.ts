@@ -18,6 +18,13 @@ export interface Employee {
   updated_at?: string;
 }
 
+export interface EmployeeFilters {
+  query?: string;
+  country?: string;
+  departmentId?: string;
+  status?: 'all' | 'active' | 'inactive';
+}
+
 interface JsonApiEmployee {
   id: number | string;
   attributes: Pick<Employee, 'first_name' | 'last_name' | 'email' | 'job_title' | 'hire_date'> & {
@@ -58,8 +65,14 @@ export const normalizeEmployee = (record: Employee | JsonApiEmployee): Employee 
 // Employee service
 export const employeeService = {
   // Fetch all employees
-  getAll: async () => {
-    const response = await apiClient.get('/employees');
+  getAll: async (filters: EmployeeFilters = {}) => {
+    const params = {
+      query: filters.query || undefined,
+      country: filters.country || undefined,
+      department_id: filters.departmentId || undefined,
+      status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+    };
+    const response = await apiClient.get('/employees', { params });
     return response.data;
   },
 

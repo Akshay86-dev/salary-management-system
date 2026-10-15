@@ -7,8 +7,11 @@ class Api::V1::EmployeesController < Api::V1::BaseController
   # List all employees with optional filtering
   def index
     employees = Employee.includes(:department, :location, :current_salary)
-    employees = employees.active if params[:active] == 'true'
+    employees = employees.active if params[:status] == 'active' || params[:active] == 'true'
+    employees = employees.inactive if params[:status] == 'inactive'
     employees = employees.search(params[:query]) if params[:query].present?
+    employees = employees.where(department_id: params[:department_id]) if params[:department_id].present?
+    employees = employees.joins(:location).where(locations: { country: params[:country] }) if params[:country].present?
     employees = employees.ordered
 
     render json: EmployeeSerializer.new(employees, is_collection: true)
