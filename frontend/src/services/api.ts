@@ -1,13 +1,12 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
 // Create axios instance with base configuration
 // In development, Vite dev server proxies API requests to Rails on port 3000
 // In production, Rails serves the React frontend from the same origin
 const apiClient: AxiosInstance = axios.create({
   baseURL: '/api/v1',
-  // Important: credentials must be true for cookie-based JWT auth
-  // Or use Authorization header with Bearer token
-  withCredentials: false, // We use JWT in Authorization header
+  // Important: credentials must be 'include' for cookie-based JWT auth
+  credentials: 'include',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -16,7 +15,7 @@ const apiClient: AxiosInstance = axios.create({
 
 // Request interceptor to add JWT token to Authorization header
 apiClient.interceptors.request.use(
-  (config: AxiosRequestConfig): AxiosRequestConfig => {
+  (config) => {
     const token = localStorage.getItem('token');
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -30,7 +29,7 @@ apiClient.interceptors.request.use(
 
 // Response interceptor to handle auth errors
 apiClient.interceptors.response.use(
-  (response: AxiosResponse): AxiosResponse => {
+  (response) => {
     return response;
   },
   (error) => {

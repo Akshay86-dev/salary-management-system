@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import { authAPI } from '../services/api';
+import authService from '../services/authService';
 
 interface User {
   id: number;
@@ -35,48 +35,45 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Check for existing session on mount
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const profile = await authAPI.getProfile();
-          if (profile.data) {
+      try {
+        if (authService.isAuthenticated()) {
+          const profile = await authService.getProfile();
+          if (profile.data || profile.user) {
+            const profileData = profile.data || profile.user;
             setUser({
-              id: profile.data.data.attributes.id,
-              email: profile.data.data.attributes.email,
-              first_name: profile.data.data.attributes.first_name,
-              last_name: profile.data.data.attributes.last_name,
+              id: profileData.id,
+              email: profileData.email,
+              first_name: profileData.first_name,
+              last_name: profileData.last_name,
             });
           }
-        } catch (error) {
-          localStorage.removeItem('token');
         }
+      } catch (error) {
+        localStorage.removeItem('token');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     checkAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await authAPI.login(email, password);
-    const token = response.token;
-    if (token) {
-      localStorage.setItem('token', token);
-    }
-    const profile = await authAPI.getProfile();
-    if (profile.data) {
+    const response = await authService.login(email, password);
+    const profile = await authService.getProfile();
+    if (profile.data || profile.user) {
+      const profileData = profile.data || profile.user;
       setUser({
-        id: profile.data.data.attributes.id,
-        email: profile.data.data.attributes.email,
-        first_name: profile.data.data.attributes.first_name,
-        last_name: profile.data.data.attributes.last_name,
+        id: profileData.id,
+        email: profileData.email,
+        first_name: profileData.first_name,
+        last_name: profileData.last_name,
       });
     }
   };
 
   const logout = async () => {
-    await authAPI.logout();
-    localStorage.removeItem('token');
+    await authService.logout();
     setUser(null);
     window.location.href = '/login';
   };
