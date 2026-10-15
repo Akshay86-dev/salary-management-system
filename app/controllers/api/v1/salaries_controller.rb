@@ -29,7 +29,7 @@ class Api::V1::SalariesController < Api::V1::BaseController
     if salary.save
       render json: SalarySerializer.new(salary), status: :created
     else
-      render json: { errors: salary.errors }, status: :unprocessable_entity
+      render_validation_errors(salary)
     end
   end
 
@@ -41,7 +41,7 @@ class Api::V1::SalariesController < Api::V1::BaseController
     if salary.update(salary_params)
       render json: SalarySerializer.new(salary)
     else
-      render json: { errors: salary.errors }, status: :unprocessable_entity
+      render_validation_errors(salary)
     end
   end
 

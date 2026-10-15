@@ -9,6 +9,10 @@
 
   private
 
+  def render_validation_errors(record)
+    render json: { errors: record.errors.full_messages }, status: :unprocessable_entity
+  end
+
   # Render a standardized JSON error response
   # @param message [String] the error message
   # @param status [Symbol/Symbol] the HTTP status code

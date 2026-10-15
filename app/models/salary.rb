@@ -14,6 +14,7 @@ class Salary < ApplicationRecord
   validates :amount, numericality: { greater_than: 0 }
   validates :is_current, inclusion: { in: [true, false] }
   validates :currency, length: { is: 3 }, format: { with: /\A[A-Z]{3}\z/, message: 'must be a valid ISO 4217 currency code' }
+  before_save :clear_existing_current_salary, if: :is_current?
 
   # Salary types as constants (enum alternative)
   SALARY_TYPES = {
@@ -69,5 +70,14 @@ class Salary < ApplicationRecord
     scope = by_employee(employee.id).active_salaries
     scope = scope.where(salary_type: type) if type
     scope.first
+  end
+
+  private
+
+  def clear_existing_current_salary
+    employee.salaries
+            .where(is_current: true, salary_type: salary_type)
+            .where.not(id: id)
+            .update_all(is_current: false)
   end
 end

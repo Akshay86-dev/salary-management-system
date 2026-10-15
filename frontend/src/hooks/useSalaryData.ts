@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import salaryService, { Salary } from '../services/salaryService';
-import employeeService from '../services/employeeService';
+import employeeService, { Employee, normalizeEmployee } from '../services/employeeService';
 
 // Custom hook for fetching all salaries for an employee
 export const useSalaries = (employeeId: number) => {
@@ -69,6 +69,30 @@ export const useSalary = (id: number) => {
 };
 
 // Custom hook for salary mutations
+const getErrorMessage = (err: any, fallback: string) => {
+  const backendErrors = err.response?.data?.errors;
+
+  if (Array.isArray(backendErrors)) {
+    return backendErrors[0] || fallback;
+  }
+
+  if (typeof backendErrors === 'string') {
+    return backendErrors;
+  }
+
+  if (backendErrors && typeof backendErrors === 'object') {
+    const firstValue = Object.values(backendErrors)
+      .flatMap((value: any) => Array.isArray(value) ? value : [value])
+      .find((value) => value !== undefined && value !== null && value !== '');
+
+    if (firstValue) {
+      return String(firstValue);
+    }
+  }
+
+  return err.response?.data?.error || err.message || fallback;
+};
+
 export const useSalaryMutation = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,7 +104,7 @@ export const useSalaryMutation = () => {
       const result = await salaryService.create(data);
       return result;
     } catch (err: any) {
-      const errorMsg = err.response?.data?.errors?.[0] || err.message || 'Failed to create salary';
+      const errorMsg = getErrorMessage(err, 'Failed to create salary');
       setError(errorMsg);
       throw err;
     } finally {
@@ -95,7 +119,7 @@ export const useSalaryMutation = () => {
       const result = await salaryService.update(id, data);
       return result;
     } catch (err: any) {
-      const errorMsg = err.response?.data?.errors?.[0] || err.message || 'Failed to update salary';
+      const errorMsg = getErrorMessage(err, 'Failed to update salary');
       setError(errorMsg);
       throw err;
     } finally {
@@ -110,7 +134,7 @@ export const useSalaryMutation = () => {
       const result = await salaryService.delete(id);
       return result;
     } catch (err: any) {
-      const errorMsg = err.response?.data?.errors?.[0] || err.message || 'Failed to delete salary';
+      const errorMsg = getErrorMessage(err, 'Failed to delete salary');
       setError(errorMsg);
       throw err;
     } finally {
@@ -129,7 +153,7 @@ export const useSalaryMutation = () => {
 
 // Helper hook for fetching employees (needed by salary form)
 export const useEmployeeOptions = () => {
-  const [employees, setEmployees] = useState([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -139,7 +163,7 @@ export const useEmployeeOptions = () => {
       setError(null);
       try {
         const data = await employeeService.getAll();
-        setEmployees(data.data || data.employees || []);
+        setEmployees((data.data || data.employees || []).map(normalizeEmployee));
       } catch (err: any) {
         setError(err.response?.data?.errors?.[0] || err.message || 'Failed to fetch employees');
       } finally {

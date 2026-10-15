@@ -10,7 +10,9 @@ class Employee < ApplicationRecord
   belongs_to :department
   belongs_to :location, optional: true
   has_many :salaries, dependent: :destroy
-  has_one :current_salary, -> { where(is_current: true) }, class_name: 'Salary'
+  has_one :current_salary,
+          -> { where(is_current: true, salary_type: Salary::SALARY_TYPES[:base]).order(effective_date: :desc, id: :desc) },
+          class_name: 'Salary'
 
   # Validations
   validates :first_name, :last_name, :email, :employee_id, :job_title, :hire_date, presence: true

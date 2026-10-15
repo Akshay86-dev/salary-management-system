@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useSalary, useSalaryMutation, useEmployeeOptions } from '../../hooks/useSalaryData';
+import { useSalaryMutation, useEmployeeOptions } from '../../hooks/useSalaryData';
 import { Salary } from '../../services/salaryService';
 
 const SALARY_TYPES = [
@@ -11,37 +11,22 @@ const SALARY_TYPES = [
 ];
 
 const SalaryForm: React.FC = () => {
-  const { id } = useParams<{ id?: string }>();
-  const salaryId = id ? parseInt(id, 10) : null;
-  const isEditMode = !!salaryId;
+  const { id: employeeIdParam } = useParams<{ id?: string }>();
   const navigate = useNavigate();
 
-  const { salary: existingSalary, loading: loadingSalary } = useSalary(salaryId || 0);
   const { employees, loading: loadingEmployees } = useEmployeeOptions();
-  const { createSalary, updateSalary, loading, error: mutationError } = useSalaryMutation();
+  const { createSalary, loading, error: mutationError } = useSalaryMutation();
+  const today = new Date().toISOString().split('T')[0];
 
   const [formData, setFormData] = useState({
-    employee_id: '',
+    employee_id: employeeIdParam || '',
     amount: '',
     currency: 'USD',
     salary_type: '0',
-    effective_date: '',
+    effective_date: today,
     is_current: 'true',
   });
   const [formError, setFormError] = useState('');
-
-  useEffect(() => {
-    if (isEditMode && existingSalary) {
-      setFormData({
-        employee_id: existingSalary.employee_id?.toString() || '',
-        amount: existingSalary.amount?.toString() || '',
-        currency: existingSalary.currency || 'USD',
-        salary_type: existingSalary.salary_type?.toString() || '0',
-        effective_date: existingSalary.effective_date ? existingSalary.effective_date.split('T')[0] : '',
-        is_current: existingSalary.is_current ? 'true' : 'false',
-      });
-    }
-  }, [isEditMode, existingSalary]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -55,21 +40,34 @@ const SalaryForm: React.FC = () => {
     e.preventDefault();
     setFormError('');
 
+    const amountValue = Number(formData.amount);
+
+    if (!formData.employee_id) {
+      setFormError('Please select an employee.');
+      return;
+    }
+
+    if (!Number.isFinite(amountValue) || amountValue <= 0) {
+      setFormError('Amount must be greater than 0.');
+      return;
+    }
+
+    if (!formData.effective_date) {
+      setFormError('Effective date is required.');
+      return;
+    }
+
     try {
       const salaryData: Partial<Salary> = {
         employee_id: parseInt(formData.employee_id, 10),
-        amount: parseFloat(formData.amount),
+        amount: amountValue,
         currency: formData.currency,
         salary_type: parseInt(formData.salary_type, 10),
         effective_date: formData.effective_date,
         is_current: formData.is_current === 'true',
       };
 
-      if (isEditMode && salaryId) {
-        await updateSalary(salaryId, salaryData);
-      } else {
-        await createSalary(salaryData);
-      }
+      await createSalary(salaryData);
 
       navigate('/employees');
     } catch (err: any) {
@@ -77,19 +75,11 @@ const SalaryForm: React.FC = () => {
     }
   };
 
-  if (loadingSalary && isEditMode) {
-    return (
-      <div className="flex-center" style={{ padding: '2rem' }}>
-        <span className="loader"></span>
-      </div>
-    );
-  }
-
   return (
     <div>
       <div className="flex" style={{ marginBottom: '1rem' }}>
         <h1 style={{ color: 'var(--color-text-primary)' }}>
-          {isEditMode ? 'Edit Salary' : 'Add New Salary'}
+          Add New Salary
         </h1>
         <button
           className="btn btn-secondary"
@@ -132,7 +122,7 @@ const SalaryForm: React.FC = () => {
               required
             >
               <option value="">Select an employee</option>
-              {employees.map((emp: any) => (
+              {employees.map((emp) => (
                 <option key={emp.id} value={emp.id}>
                   {emp.first_name} {emp.last_name} ({emp.email})
                 </option>
@@ -220,6 +210,7 @@ const SalaryForm: React.FC = () => {
               value={formData.effective_date}
               onChange={handleChange}
               className="input"
+              required
             />
           </div>
 
@@ -252,9 +243,9 @@ const SalaryForm: React.FC = () => {
               {loading ? (
                 <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span className="loader" style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }}></span>
-                  {isEditMode ? 'Updating...' : 'Creating...'}
+                Creating...
                 </span>
-              ) : (isEditMode ? 'Update Salary' : 'Create Salary')}
+              ) : 'Create Salary'}
             </button>
             <button
               type="button"
