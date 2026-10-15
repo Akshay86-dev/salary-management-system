@@ -47,12 +47,13 @@ const ReportsDashboard: React.FC = () => {
         <h2 style={{ color: 'var(--color-text-primary)', marginBottom: '1rem' }}>Salary Totals by Department</h2>
         <table>
           <thead>
-            <tr><th>Department</th><th>Total Salary</th></tr>
+            <tr><th>Department</th><th>Currency</th><th>Total Salary</th></tr>
           </thead>
           <tbody>
-            {totalsPagination.items.map((item: any) => (
-              <tr key={item.department}>
+            {totalsPagination.items.map((item) => (
+              <tr key={`${item.department}-${item.currency}`}>
                 <td>{item.department}</td>
+                <td>{item.currency}</td>
                 <td>{item.formatted_total || `$${item.total_salary?.toLocaleString()}`}</td>
               </tr>
             ))}
@@ -74,12 +75,13 @@ const ReportsDashboard: React.FC = () => {
         <h2 style={{ color: 'var(--color-text-primary)', marginBottom: '1rem' }}>Average Salary by Job Title</h2>
         <table>
           <thead>
-            <tr><th>Job Title</th><th>Average Salary</th></tr>
+            <tr><th>Job Title</th><th>Currency</th><th>Average Salary</th></tr>
           </thead>
           <tbody>
-            {jobTitlePagination.items.map((item: any) => (
-              <tr key={item.job_title}>
+            {jobTitlePagination.items.map((item) => (
+              <tr key={`${item.job_title}-${item.currency}`}>
                 <td>{item.job_title}</td>
+                <td>{item.currency}</td>
                 <td>{item.formatted_average || `$${item.average_salary?.toLocaleString()}`}</td>
               </tr>
             ))}
@@ -101,16 +103,21 @@ const ReportsDashboard: React.FC = () => {
         <h2 style={{ color: 'var(--color-text-primary)', marginBottom: '1rem' }}>Department Comparison</h2>
         <table>
           <thead>
-            <tr><th>Department</th><th>Budget</th><th>Employees</th><th>Total Salary</th><th>Average Salary</th></tr>
+            <tr><th>Department</th><th>Budget</th><th>Employees</th><th>Salary by Currency</th></tr>
           </thead>
           <tbody>
-            {comparisonPagination.items.map((item: any) => (
+            {comparisonPagination.items.map((item) => (
               <tr key={item.department}>
                 <td>{item.department}</td>
                 <td>${item.budget?.toLocaleString() || 'N/A'}</td>
                 <td>{item.employee_count}</td>
-                <td>{item.formatted_total_salary || `$${item.total_salary?.toLocaleString()}`}</td>
-                <td>{item.formatted_average_salary || `$${item.average_salary?.toLocaleString()}`}</td>
+                <td>
+                  {item.salary_by_currency.map((salary) => (
+                    <div key={salary.currency}>
+                      {salary.formatted_total_salary} total / {salary.formatted_average_salary} average
+                    </div>
+                  ))}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -134,7 +141,7 @@ const ReportsDashboard: React.FC = () => {
             <tr><th>Currency</th><th>Total Amount</th></tr>
           </thead>
           <tbody>
-            {currencyPagination.items.map((item: any) => (
+            {currencyPagination.items.map((item) => (
               <tr key={item.currency}>
                 <td>{item.currency}</td>
                 <td>{item.formatted_total || `${item.total_amount?.toLocaleString()}`}</td>

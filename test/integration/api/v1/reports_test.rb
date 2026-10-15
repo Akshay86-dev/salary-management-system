@@ -1,4 +1,5 @@
 require "test_helper"
+require "csv"
 
 class Api::V1::ReportsTest < ActionDispatch::IntegrationTest
   self.fixture_table_names = []
@@ -34,7 +35,25 @@ class Api::V1::ReportsTest < ActionDispatch::IntegrationTest
     @employee.salaries.create!(
       amount: 60_000,
       currency: "USD",
-      salary_type: Salary::SALARY_TYPES.fetch(:base),
+      salary_type: :base,
+      effective_date: Date.current,
+      is_current: true
+    )
+
+    euro_employee = User.create!(
+      role: :employee,
+      first_name: "Euro",
+      last_name: "Employee",
+      email: "euro-employee-#{SecureRandom.hex(4)}@example.com",
+      job_title: "Analyst",
+      hire_date: Date.current,
+      department: @employee.department,
+      location: @employee.location
+    )
+    euro_employee.salaries.create!(
+      amount: 50_000,
+      currency: "EUR",
+      salary_type: :base,
       effective_date: Date.current,
       is_current: true
     )
@@ -47,9 +66,13 @@ class Api::V1::ReportsTest < ActionDispatch::IntegrationTest
 
     assert_response :ok
     totals = response.parsed_body
-    assert_equal 60_000.0, totals.dig("data", 0, "total_salary").to_f
-    assert_equal "USD 60,000", totals.dig("data", 0, "formatted_total")
-    assert_equal 60_000.0, totals.dig("summary", "total_all_departments").to_f
+    totals_by_currency = totals.fetch("data").index_by { |entry| entry.fetch("currency") }
+    assert_equal 60_000.0, totals_by_currency.dig("USD", "total_salary").to_f
+    assert_equal 50_000.0, totals_by_currency.dig("EUR", "total_salary").to_f
+    assert_equal "USD 60,000.00", totals_by_currency.dig("USD", "formatted_total")
+    summary_by_currency = totals.dig("summary", "totals_by_currency").index_by { |entry| entry.fetch("currency") }
+    assert_equal 60_000.0, summary_by_currency.dig("USD", "total_salary").to_f
+    assert_equal 50_000.0, summary_by_currency.dig("EUR", "total_salary").to_f
 
     get "/api/v1/reports/average_salary_by_job_title",
         headers: @authorization_headers,
@@ -57,8 +80,35 @@ class Api::V1::ReportsTest < ActionDispatch::IntegrationTest
 
     assert_response :ok
     averages = response.parsed_body
-    assert_equal "Analyst", averages.dig("data", 0, "job_title")
-    assert_equal 60_000.0, averages.dig("summary", "average_all_jobs").to_f
-    assert_equal "$60,000.00", averages.dig("data", 0, "formatted_average")
+    averages_by_currency = averages.fetch("data").index_by { |entry| entry.fetch("currency") }
+    assert_equal "Analyst", averages_by_currency.dig("USD", "job_title")
+    assert_equal 60_000.0, averages_by_currency.dig("USD", "average_salary").to_f
+    assert_equal 50_000.0, averages_by_currency.dig("EUR", "average_salary").to_f
+    assert_equal "USD 60,000.00", averages_by_currency.dig("USD", "formatted_average")
+
+    get "/api/v1/reports/department_comparison",
+        headers: @authorization_headers,
+        as: :json
+
+    assert_response :ok
+    comparison = response.parsed_body.dig("data", 0)
+    comparison_by_currency = comparison.fetch("salary_by_currency").index_by { |entry| entry.fetch("currency") }
+    assert_equal 60_000.0, comparison_by_currency.dig("USD", "total_salary").to_f
+    assert_equal 50_000.0, comparison_by_currency.dig("EUR", "total_salary").to_f
+
+    get "/api/v1/reports/export_salaries",
+        headers: @authorization_headers,
+        as: :json
+
+    assert_response :ok
+    rows = CSV.parse(response.body, headers: true)
+    assert_equal [
+      "Employee ID", "Name", "Email", "Department", "Job Title", "Salary Type",
+      "Salary Amount", "Currency", "Effective Date"
+    ], rows.headers
+    salary_row = rows.find { |row| row["Email"] == @employee.email }
+    assert_equal "60000.0", salary_row["Salary Amount"]
+    assert_equal "USD", salary_row["Currency"]
+    assert_equal "BASE", salary_row["Salary Type"]
   end
 end

@@ -7,24 +7,23 @@ class Api::V1::ReportsController < Api::V1::BaseController
   # Total salary amounts by department
   def salary_totals_by_department
     totals = current_salaries_for_reporting
-      .group("departments.name")
+      .group("departments.name", "salaries.currency")
       .sum(:amount)
-    total_all_departments = totals.values.sum
 
-    result = totals.map do |dept_name, total|
+    result = totals.map do |(dept_name, currency), total|
       {
         department: dept_name,
+        currency: currency,
         total_salary: total,
-        formatted_total: format_salary(total)
+        formatted_total: format_salary(total, currency)
       }
     end
 
     render json: {
       data: result,
       summary: {
-        total_all_departments: total_all_departments,
-        formatted_total: format_salary(total_all_departments),
-        department_count: totals.size
+        totals_by_currency: format_totals_by_currency(totals),
+        department_count: totals.keys.map(&:first).uniq.size
       }
     }
   end
@@ -32,25 +31,30 @@ class Api::V1::ReportsController < Api::V1::BaseController
   # GET /api/v1/reports/average_salary_by_job_title
   # Average salary by job title
   def average_salary_by_job_title
-    averages = current_salaries_for_reporting
-      .group("users.job_title")
-      .average(:amount)
-    average_all_jobs = averages.values.sum / averages.size.to_f
+    salaries = current_salaries_for_reporting
+    averages = salaries.group("users.job_title", "salaries.currency").average(:amount)
+    averages_by_currency = salaries.group("salaries.currency").average(:amount)
 
-    result = averages.map do |job_title, avg_salary|
+    result = averages.map do |(job_title, currency), avg_salary|
       {
         job_title: job_title,
+        currency: currency,
         average_salary: avg_salary.to_f,
-        formatted_average: format_currency(avg_salary.to_f)
+        formatted_average: format_salary(avg_salary, currency)
       }
     end
 
     render json: {
       data: result.sort_by { |d| -d[:average_salary] },
       summary: {
-        average_all_jobs: average_all_jobs,
-        formatted_average: format_currency(average_all_jobs),
-        job_title_count: averages.size
+        averages_by_currency: averages_by_currency.map do |currency, average|
+          {
+            currency: currency,
+            average_salary: average.to_f,
+            formatted_average: format_salary(average, currency)
+          }
+        end,
+        job_title_count: averages.keys.map(&:first).uniq.size
       }
     }
   end
@@ -58,31 +62,41 @@ class Api::V1::ReportsController < Api::V1::BaseController
   # GET /api/v1/reports/department_comparison
   # Compare departments by average salary
   def department_comparison
-    departments = Department.includes(:employees)
+    departments = Department.ordered.includes(:employees)
 
     result = departments.map do |dept|
       active_employees = dept.employees.active
-      salaries = Salary.where(employee_id: active_employees.select(&:id), is_current: true)
-      total_salary = salaries.sum(:amount)
-      avg_salary = salaries.average(:amount) || 0
+      salaries = Salary.where(employee_id: active_employees.select(:id), is_current: true)
+      salary_by_currency = salaries.group(:currency).sum(:amount).map do |currency, total|
+        average = salaries.where(currency: currency).average(:amount) || 0
+
+        {
+          currency: currency,
+          total_salary: total,
+          average_salary: average.to_f,
+          formatted_total_salary: format_salary(total, currency),
+          formatted_average_salary: format_salary(average, currency)
+        }
+      end
 
       {
         department: dept.name,
         budget: dept.budget,
         employee_count: active_employees.count,
-        total_salary: total_salary,
-        average_salary: avg_salary.to_f,
-        formatted_total_salary: format_currency(total_salary),
-        formatted_average_salary: format_currency(avg_salary.to_f)
+        salary_by_currency: salary_by_currency
       }
     end
+
+    totals_by_currency = Salary.joins(employee: :department)
+      .where(is_current: true, users: { is_active: true })
+      .group(:currency)
+      .sum(:amount)
 
     render json: {
       data: result.sort_by { |d| -d[:employee_count] },
       summary: {
         total_employees: result.sum { |d| d[:employee_count] },
-        total_salary: result.sum { |d| d[:total_salary] },
-        formatted_total_salary: format_currency(result.sum { |d| d[:total_salary] }),
+        totals_by_currency: format_totals_by_currency(totals_by_currency),
         department_count: result.size
       }
     }
@@ -115,7 +129,8 @@ class Api::V1::ReportsController < Api::V1::BaseController
                      .order("users.last_name", "users.first_name")
 
     csv_data = CSV.generate(headers: true) do |csv|
-      csv << %w[Employee ID Name Email Department Job Title Salary Amount Currency Type Effective Date]
+      csv << [ "Employee ID", "Name", "Email", "Department", "Job Title", "Salary Type",
+               "Salary Amount", "Currency", "Effective Date" ]
 
       salaries.find_each do |salary|
         employee = salary.employee
@@ -125,10 +140,9 @@ class Api::V1::ReportsController < Api::V1::BaseController
           employee&.email,
           employee&.department&.name,
           employee&.job_title,
-          Salary::SALARY_TYPES.key(salary.salary_type)&.to_s&.upcase,
+          salary.salary_type.upcase,
           salary.amount,
           salary.currency,
-          Salary::SALARY_TYPES.key(salary.salary_type)&.to_s&.upcase,
           salary.effective_date.strftime("%Y-%m-%d")
         ]
       end
@@ -178,20 +192,25 @@ class Api::V1::ReportsController < Api::V1::BaseController
   end
 
   def format_salary(amount, currency = "USD")
-    "#{currency} #{number_with_delimiter(amount.to_i)}"
+    ActiveSupport::NumberHelper.number_to_currency(
+      amount,
+      unit: "#{currency} ",
+      format: "%u%n",
+      precision: 2
+    )
   end
 
-  def format_currency(amount)
-    return "$0.00" if amount.nil?
+  def format_totals_by_currency(totals)
+    totals.group_by do |key, _amount|
+      key.is_a?(Array) ? key.last : key
+    end.map do |currency, entries|
+      amount = entries.sum { |_key, value| value }
 
-    "$#{number_with_delimiter(number_with_precision(amount, precision: 2))}"
-  end
-
-  def number_with_delimiter(number)
-    ActiveSupport::NumberHelper.number_to_delimited(number)
-  end
-
-  def number_with_precision(number, precision: 2)
-    sprintf("%.#{precision}f", number)
+      {
+        currency: currency,
+        total_salary: amount,
+        formatted_total: format_salary(amount, currency)
+      }
+    end
   end
 end

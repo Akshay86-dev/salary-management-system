@@ -1,12 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import reportsService from '../services/reportsService';
+import {
+  CurrencySalaryTotal,
+  DepartmentSalaryComparison,
+  DepartmentSalaryTotal,
+  JobTitleSalaryAverage,
+} from '../services/reportsService';
+import { errorMessage } from '../services/errorMessage';
 
 // Custom hook for fetching reports data
 export const useReports = () => {
-  const [salaryTotalsByDepartment, setSalaryTotalsByDepartment] = useState<any[]>([]);
-  const [averageSalaryByJobTitle, setAverageSalaryByJobTitle] = useState<any[]>([]);
-  const [departmentComparison, setDepartmentComparison] = useState<any[]>([]);
-  const [salaryByCurrency, setSalaryByCurrency] = useState<any[]>([]);
+  const [salaryTotalsByDepartment, setSalaryTotalsByDepartment] = useState<DepartmentSalaryTotal[]>([]);
+  const [averageSalaryByJobTitle, setAverageSalaryByJobTitle] = useState<JobTitleSalaryAverage[]>([]);
+  const [departmentComparison, setDepartmentComparison] = useState<DepartmentSalaryComparison[]>([]);
+  const [salaryByCurrency, setSalaryByCurrency] = useState<CurrencySalaryTotal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,8 +47,8 @@ export const useReports = () => {
       if (failedRequests.length === 4) {
         setError('Failed to fetch report data');
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch reports');
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to fetch reports'));
     } finally {
       setLoading(false);
     }
