@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module Seeding
-  class DepartmentManagerCommand
-    def call
+  module DepartmentManagerSteps
+    def assign_department_managers
       puts "\n6/6: Assigning department managers..."
 
       Department.find_each do |department|

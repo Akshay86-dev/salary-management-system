@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module Seeding
-  class LocationCommand
-    def call
+  module LocationSteps
+    def seed_locations
       puts "\n2/6: Seeding #{Configuration::LOCATION_DATA.length} locations..."
 
       locations = Configuration::LOCATION_DATA.each_with_index.map do |attributes, index|

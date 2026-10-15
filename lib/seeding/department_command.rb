@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module Seeding
-  class DepartmentCommand
-    def call
+  module DepartmentSteps
+    def seed_departments
       puts "\n1/6: Seeding #{Configuration::DEPARTMENT_NAMES.length} departments..."
 
       departments = Configuration::DEPARTMENT_NAMES.map do |name|

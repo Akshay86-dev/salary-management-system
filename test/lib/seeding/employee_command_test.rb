@@ -3,13 +3,13 @@
 require "test_helper"
 require_relative "../../../lib/seeding/seed_runner"
 
-class Seeding::EmployeeCommandTest < ActiveSupport::TestCase
+class Seeding::EmployeeStepsTest < ActiveSupport::TestCase
   self.fixture_table_names = []
 
   test "admin command uses the development password default" do
     previous_password = ENV.delete("SEED_ADMIN_PASSWORD")
 
-    Seeding::AdminUserCommand.new.call
+    Seeding::SeedRunner.seed_admin_user
 
     admin = User.find_by!(email: "admin@salarymgmt.com")
     assert admin.valid_password?("password123")
@@ -26,15 +26,18 @@ class Seeding::EmployeeCommandTest < ActiveSupport::TestCase
       salary_batch_size: 2,
       salary_range: { min: 45_000, max: 45_000 }
     }
-    command = Seeding::EmployeeCommand.new(
+    Seeding::SeedRunner.seed_employees(
       configuration: configuration,
       departments: [ department ],
       locations: [ location ]
     )
 
-    command.call
-    command.call
-    Seeding::SalaryCommand.new(configuration: configuration).call
+    Seeding::SeedRunner.seed_employees(
+      configuration: configuration,
+      departments: [ department ],
+      locations: [ location ]
+    )
+    Seeding::SeedRunner.seed_salaries(configuration: configuration)
 
     assert_equal 2, User.employee_records.count
     assert_equal 2, User.employee_records.distinct.count(:employee_id)

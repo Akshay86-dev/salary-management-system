@@ -3,4 +3,4 @@
 
 require_relative "../lib/seeding/seed_runner"
 
-Seeding::SeedRunner.new.run
+Seeding::SeedRunner.call(profile: :default)

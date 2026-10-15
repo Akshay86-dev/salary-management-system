@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module Seeding
-  class AdminUserCommand
-    def call
+  module AdminUserSteps
+    def seed_admin_user
       puts "\n3/6: Seeding admin user..."
 
       if User.human_resource.exists?
@@ -31,7 +31,6 @@ module Seeding
           raise "Set SEED_ADMIN_PASSWORD before seeding the production admin user."
         end
       end
-
       ENV.fetch("SEED_ADMIN_PASSWORD", "password123")
     end
   end

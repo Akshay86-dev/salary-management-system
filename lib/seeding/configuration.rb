@@ -9,6 +9,27 @@ module Seeding
       salary_range: { min: 45_000, max: 250_000 }
     }.freeze
 
+    PROFILE_COUNTS = {
+      small: 100,
+      default: VALUES.fetch(:employee_count),
+      large: 50_000
+    }.freeze
+
+    def self.for_profile(profile)
+      name = case profile
+      when String then profile.to_sym
+      when Symbol then profile
+      else
+        raise ArgumentError, "Seed profile must be a string or symbol."
+      end
+
+      employee_count = PROFILE_COUNTS.fetch(name) do
+        raise ArgumentError, "Unknown seed profile #{profile.inspect}. Available profiles: #{PROFILE_COUNTS.keys.join(', ')}."
+      end
+
+      VALUES.merge(employee_count: employee_count)
+    end
+
     DEPARTMENT_NAMES = [
       "Engineering", "Sales", "Marketing", "Human Resources", "Finance",
       "Operations", "Customer Support", "Research & Development", "Legal",

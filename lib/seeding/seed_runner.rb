@@ -11,24 +11,29 @@ require_relative "department_manager_command"
 
 module Seeding
   class SeedRunner
-    def run
-      puts "Starting database seeding..."
-      puts "Target counts: #{Configuration::VALUES.fetch(:employee_count)} employees"
+    extend DepartmentSteps
+    extend LocationSteps
+    extend AdminUserSteps
+    extend EmployeeSteps
+    extend SalarySteps
+    extend DepartmentManagerSteps
+
+    def self.call(profile: :default, environment: Rails.env)
+      configuration = Configuration.for_profile(profile)
+      raise "Seed profiles are disabled in production because employee and salary records are regenerated." if environment.production?
+
+      puts "Starting '#{profile}' database seed profile..."
+      puts "Target counts: #{configuration.fetch(:employee_count)} employees"
       puts "=" * 60
 
-      departments = DepartmentCommand.new.call
-      locations = LocationCommand.new.call
-      AdminUserCommand.new.call
-      EmployeeCommand.new(departments: departments, locations: locations).call
-      SalaryCommand.new.call
-      DepartmentManagerCommand.new.call
+      departments = seed_departments
+      locations = seed_locations
 
-      print_summary
-    end
+      seed_admin_user
+      seed_employees(configuration: configuration, departments: departments, locations: locations)
+      seed_salaries(configuration: configuration)
+      assign_department_managers
 
-    private
-
-    def print_summary
       puts "\n" + "=" * 60
       puts "DATABASE SEEDING COMPLETE!"
       puts "=" * 60
