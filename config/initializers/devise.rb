@@ -24,7 +24,7 @@ Devise.setup do |config|
   # Configure the e-mail address which will be shown in Devise::Mailer,
   # note that it will be overwritten if you use your own mailer class
   # with default "from" parameter.
-  config.mailer_sender = 'please-change-me-at-config-initializers-devise@example.com'
+  config.mailer_sender = "please-change-me-at-config-initializers-devise@example.com"
 
   # Configure the class responsible to send e-mails.
   # config.mailer = 'Devise::Mailer'
@@ -36,7 +36,7 @@ Devise.setup do |config|
   # Load and configure the ORM. Supports :active_record (default) and
   # :mongoid (bson_ext recommended) by default. Other ORMs may be
   # available as additional gems.
-  require 'devise/orm/active_record'
+  require "devise/orm/active_record"
 
   # ==> Configuration for any authentication mechanism
   # Configure which keys are used when authenticating a user. The default is
@@ -58,12 +58,12 @@ Devise.setup do |config|
   # Configure which authentication keys should be case-insensitive.
   # These keys will be downcased upon creating or modifying a user and when used
   # to authenticate or find a user. Default is :email.
-  config.case_insensitive_keys = [:email]
+  config.case_insensitive_keys = [ :email ]
 
   # Configure which authentication keys should have whitespace stripped.
   # These keys will have whitespace before and after removed upon creating or
   # modifying a user and when used to authenticate or find a user. Default is :email.
-  config.strip_whitespace_keys = [:email]
+  config.strip_whitespace_keys = [ :email ]
 
   # Tell if authentication through request.params is enabled. True by default.
   # It can be set to an array that will enable params authentication only for the
@@ -97,7 +97,7 @@ Devise.setup do |config|
   # Notice that if you are skipping storage for all authentication paths, you
   # may want to disable generating routes to Devise's sessions controller by
   # passing skip: :sessions to `devise_for` in your config/routes.rb
-  config.skip_session_storage = [:http_auth]
+  config.skip_session_storage = [ :http_auth ]
 
   # By default, Devise cleans up the CSRF token on authentication to
   # avoid CSRF token fixation attacks. This means that, when using AJAX
@@ -266,45 +266,45 @@ Devise.setup do |config|
   # should add them to the navigational formats lists.
   #
   # The "*/*" below is required to match Internet Explorer requests.
-  config.navigational_formats = ['*/*', :html, :turbo_stream, :json]
+  config.navigational_formats = [ "*/*", :html, :turbo_stream, :json ]
 
   # The default HTTP method used to sign out a resource. Default is :delete.
   config.sign_out_via = :delete
 
-  # ==> OmniAuth
-  # Add a new OmniAuth provider. Check the wiki for more information on setting
-  # up on your models and hooks.
-  # config.omniauth :github, 'APP_ID', 'APP_SECRET', scope: 'user,public_repo'
+    # ==> OmniAuth
+    # Add a new OmniAuth provider. Check the wiki for more information on setting
+    # up on your models and hooks.
+    # config.omniauth :github, 'APP_ID', 'APP_SECRET', scope: 'user,public_repo'
 
-  # ==> Warden configuration
-  # If you want to use other strategies, that are not supported by Devise, or
-  # change the failure app, you can configure them inside the config.warden block.
-  #
-  # config.warden do |warden_config|
-  #   warden_config.intercept_401 = false
-  #   warden_config.default_strategies(scope: :user).unshift :some_external_strategy
-  # end
+    # ==> Warden configuration
+    # If you want to use other strategies, that are not supported by Devise, or
+    # change the failure app, you can configure them inside the config.warden block.
+    #
+    # config.warden do |warden_config|
+    #   warden_config.intercept_401 = false
+    #   warden_config.default_strategies(scope: :user).unshift :some_external_strategy
+    # end
 
-  # ==> Mountable engine configurations
-  # When using Devise inside an engine, let's call it `MyEngine`, and this engine
-  # is mountable, there are some extra configurations to be taken into account.
-  # The following options are available, assuming the engine is mounted as:
-  #
-  #     mount MyEngine, at: '/my_engine'
-  #
-  # The router that invoked `devise_for`, in the example above, would be:
-  # config.router_name = :my_engine
-  #
-  # When using OmniAuth, Devise cannot automatically set OmniAuth path,
-  # so you need to do it manually. For the users scope, it would be:
-  # config.omniauth_path_prefix = '/my_engine/users/auth'
+    # ==> Mountable engine configurations
+    # When using Devise inside an engine, let's call it `MyEngine`, and this engine
+    # is mountable, there are some extra configurations to be taken into account.
+    # The following options are available, assuming the engine is mounted as:
+    #
+    #     mount MyEngine, at: '/my_engine'
+    #
+    # The router that invoked `devise_for`, in the example above, would be:
+    # config.router_name = :my_engine
+    #
+    # When using OmniAuth, Devise cannot automatically set OmniAuth path,
+    # so you need to do it manually. For the users scope, it would be:
+    # config.omniauth_path_prefix = '/my_engine/users/auth'
 
-  # ==> Hotwire/Turbo configuration
-  # When using Devise with Hotwire/Turbo, the http status for error responses
-  # and some redirects must match the following. The default in Devise for existing
-  # apps is `200 OK` and `302 Found` respectively, but new apps are generated with
-  # these new defaults that match Hotwire/Turbo behavior.
-  # Note: These might become the new default in future versions of Devise.
+    # ==> Hotwire/Turbo configuration
+    # When using Devise with Hotwire/Turbo, the http status for error responses
+    # and some redirects must match the following. The default in Devise for existing
+    # apps is `200 OK` and `302 Found` respectively, but new apps are generated with
+    # these new defaults that match Hotwire/Turbo behavior.
+    # Note: These might become the new default in future versions of Devise.
     config.responder.error_status = :unprocessable_content
   config.responder.redirect_status = :see_other
 
@@ -325,15 +325,15 @@ Devise.setup do |config|
   # Use the secret key from Rails credentials or generate one with:
   #   rails secret
   # In production, set via DEVISE_JWT_SECRET environment variable.
-  jwt_secret = ENV.fetch('DEVISE_JWT_SECRET', Rails.application.secret_key_base)
+  jwt_secret = ENV.fetch("DEVISE_JWT_SECRET", Rails.application.secret_key_base)
 
   config.jwt do |jwt|
     jwt.secret = jwt_secret
     jwt.expiration_time = 24.hours.to_i
-    jwt.request_formats = { user: [:json] }
+    jwt.request_formats = { user: [ :json ] }
     # Automatically revoke tokens on sign-out
     jwt.revocation_requests = [
-      ['DELETE', %r{^/users/sign_out$}]
+      [ "DELETE", %r{^/users/sign_out$} ]
     ]
   end
 end

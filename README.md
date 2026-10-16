@@ -14,7 +14,7 @@ The React frontend uses client-side routing and a persistent light/dark theme.
 
 | Area | Technology |
 | --- | --- |
-| Backend/API | Ruby 3.2.2, Rails 8.1.4 |
+| Backend/API | Ruby 3.3, Rails 8.1.4 |
 | Database | PostgreSQL |
 | Frontend | React 18, TypeScript, React Router 6 |
 | Frontend tooling | Node.js 22, npm, Vite 5 |
@@ -145,7 +145,7 @@ For more details on organization and safety behavior, see
 
 ## Prerequisites
 
-- Ruby **3.2.2** and Bundler.
+- Ruby **3.3** and Bundler.
 - Node.js **22** and npm for frontend development or builds.
 - PostgreSQL, running locally or reachable via `DATABASE_URL`.
 - A C/C++ toolchain and PostgreSQL development headers if native gems need to

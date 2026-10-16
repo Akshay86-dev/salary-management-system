@@ -6,7 +6,7 @@ require_relative "../../../lib/seeding/seed_runner"
 class Seeding::EmployeeStepsTest < ActiveSupport::TestCase
   self.fixture_table_names = []
 
-  test "admin command uses the development password default" do
+  test "admin step uses the development password default" do
     previous_password = ENV.delete("SEED_ADMIN_PASSWORD")
 
     Seeding::SeedRunner.seed_admin_user
@@ -17,7 +17,7 @@ class Seeding::EmployeeStepsTest < ActiveSupport::TestCase
     ENV["SEED_ADMIN_PASSWORD"] = previous_password if previous_password
   end
 
-  test "employee and salary commands can be rerun without duplicate profiles" do
+  test "employee and salary steps can be rerun without duplicate profiles" do
     department = Department.create!(name: "Seed Test")
     location = Location.create!(name: "Seed Test", country: "USA")
     configuration = {

@@ -11,7 +11,7 @@ class CreateSalaries < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :salaries, [:employee_id, :is_current]
-    add_index :salaries, [:employee_id, :salary_type, :is_current], where: "is_current = true", name: 'index_salaries_on_current_by_type'
+    add_index :salaries, [ :employee_id, :is_current ]
+    add_index :salaries, [ :employee_id, :salary_type, :is_current ], where: "is_current = true", name: 'index_salaries_on_current_by_type'
   end
 end

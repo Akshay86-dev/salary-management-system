@@ -2,12 +2,12 @@
 
 require "faker"
 require_relative "configuration"
-require_relative "department_command"
-require_relative "location_command"
-require_relative "admin_user_command"
-require_relative "employee_command"
-require_relative "salary_command"
-require_relative "department_manager_command"
+require_relative "department_steps"
+require_relative "location_steps"
+require_relative "admin_user_steps"
+require_relative "employee_steps"
+require_relative "salary_steps"
+require_relative "department_manager_steps"
 
 module Seeding
   class SeedRunner

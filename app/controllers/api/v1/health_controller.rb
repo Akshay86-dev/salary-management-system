@@ -4,10 +4,10 @@
 class Api::V1::HealthController < ApplicationController
   def index
     render json: {
-      status: 'ok',
+      status: "ok",
       timestamp: Time.current.iso8601,
-      database: 'connected',
-      version: '1.0.0'
+      database: "connected",
+      version: "1.0.0"
     }
   end
 end

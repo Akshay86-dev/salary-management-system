@@ -41,15 +41,15 @@ would cause methods to override one another.
 
 | File | Planned change |
 | --- | --- |
-| `lib/seeding/department_command.rb` | Replaced the command class with `DepartmentSteps#seed_departments`, preserving department creation behavior. |
-| `lib/seeding/location_command.rb` | Replaced the command class with `LocationSteps#seed_locations`, preserving Faker-generated address fields. |
-| `lib/seeding/admin_user_command.rb` | Replaced the command class with `AdminUserSteps#seed_admin_user`, preserving password handling and its production check. |
-| `lib/seeding/employee_command.rb` | Replaced the command class with `EmployeeSteps#seed_employees`, preserving batching and existing-data cleanup. |
-| `lib/seeding/salary_command.rb` | Replaced the command class with `SalarySteps#seed_salaries`, preserving salary batching and persistence. |
-| `lib/seeding/department_manager_command.rb` | Replaced the command class with `DepartmentManagerSteps#assign_department_managers`. |
+| `lib/seeding/department_steps.rb` | Replaced the command class with `DepartmentSteps#seed_departments`, preserving department creation behavior. |
+| `lib/seeding/location_steps.rb` | Replaced the command class with `LocationSteps#seed_locations`, preserving Faker-generated address fields. |
+| `lib/seeding/admin_user_steps.rb` | Replaced the command class with `AdminUserSteps#seed_admin_user`, preserving password handling and its production check. |
+| `lib/seeding/employee_steps.rb` | Replaced the command class with `EmployeeSteps#seed_employees`, preserving batching and existing-data cleanup. |
+| `lib/seeding/salary_steps.rb` | Replaced the command class with `SalarySteps#seed_salaries`, preserving salary batching and persistence. |
+| `lib/seeding/department_manager_steps.rb` | Replaced the command class with `DepartmentManagerSteps#assign_department_managers`. |
 | `lib/seeding/seed_runner.rb` | Kept required files, the `SeedRunner.call` API, profile validation, output, and execution order. Extended the step modules and called their uniquely named methods. |
 | `test/lib/seeding/seed_runner_test.rb` | Kept profile handling coverage and the runner's public API test. |
-| `test/lib/seeding/employee_command_test.rb` | Updated to call the new class-level step methods while preserving admin and employee/salary creation coverage. |
+| `test/lib/seeding/employee_steps_test.rb` | Updated to call the new class-level step methods while preserving admin and employee/salary creation coverage. |
 | `docs/seeding.md` | Updated the seeding overview to describe the step modules and class-level API. |
 
 ## Files that can remain as they are

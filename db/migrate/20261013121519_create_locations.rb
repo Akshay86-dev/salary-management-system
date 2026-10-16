@@ -14,6 +14,6 @@ class CreateLocations < ActiveRecord::Migration[8.1]
     end
 
     add_index :locations, :name
-    add_index :locations, [:city, :state]
+    add_index :locations, [ :city, :state ]
   end
 end
